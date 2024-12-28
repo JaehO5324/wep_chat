@@ -1,4 +1,23 @@
 let username = ''; // 사용자 이름 저장
+// DOM Elements
+const usernameInput = document.getElementById('username-input');
+const joinChatButton = document.getElementById('join-chat');
+const chatWindow = document.getElementById('chat-window');
+const messageBox = document.getElementById('message-box');
+const sendButton = document.getElementById('send-button');
+const messagesDiv = document.getElementById('messages');
+const userInfo = document.getElementById('user-info');
+
+// Join chat event
+joinChatButton.addEventListener('click', () => {
+  username = usernameInput.value.trim();
+  if (username) {
+    userInfo.style.display = 'none';
+    chatWindow.classList.remove('hidden');
+  } else {
+    alert('Please enter your name to join the chat.');
+  }
+});
 
 // 사용자 이름 입력 처리
 document.getElementById('username-form').addEventListener('submit', (event) => {
