@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Real-Time Chat</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <!-- 사용자 이름 입력 모달 -->
+  <div id="username-modal">
+    <form id="username-form">
+      <label for="username-input">Enter your name:</label>
+      <input type="text" id="username-input" placeholder="Your name" required />
+      <button type="submit">Join Chat</button>
+    </form>
+  </div>
+
+  <!-- 채팅창 -->
+  <div id="chat-container">
+    <!-- 메시지 표시 영역 -->
+    <div id="messages"></div>
+
+    <!-- 입력 영역 -->
+    <div id="input-area">
+      <input type="text" id="message-input" placeholder="Type your message" />
+      <button id="send-button">Send</button>
+    </div>
+  </div>
+
+  <!-- Socket.IO 클라이언트 라이브러리 -->
+  <script src="/socket.io/socket.io.js"></script>
+  <!-- 클라이언트 스크립트 -->
+  <script src="/script.js"></script>
+</body>
+</html>
