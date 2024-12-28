@@ -11,7 +11,7 @@ const cookieParser = require('cookie-parser');//?
 
 const authRoutes = require('./routes/auth'); // 회원 가입 및 로그인 라우트
 const protectedRoutes = require('./routes/protected'); // 보호된 라우트
-const app = express();
+
 
 app.use(express.json());
 app.use(cookieParser());
