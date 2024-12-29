@@ -1,4 +1,7 @@
 let username = ''; // 사용자 이름 저장
+
+let token = localStorage.getItem('authToken');// 가짜 토큰 저장소 (실제 구현에서는 로컬 스토리지나 세션 사용)
+
 // DOM Elements
 const usernameInput = document.getElementById('username-input');
 const joinChatButton = document.getElementById('join-chat');
@@ -7,6 +10,67 @@ const messageBox = document.getElementById('message-box');
 const sendButton = document.getElementById('send-button');
 const messagesDiv = document.getElementById('messages');
 const userInfo = document.getElementById('user-info');
+
+
+// 초기 렌더링
+window.onload = () => {
+  if (token) {
+    // 로그인 상태인 경우 채팅 화면 표시
+    showChatApp();
+  } else {
+    // 로그인 상태가 아닌 경우 로그인 화면 표시
+    showLoginScreen();
+  }
+};
+
+// 로그인 화면 표시
+function showLoginScreen() {
+  authContainer.classList.remove('hidden');
+  chatApp.classList.add('hidden');
+}
+
+// 채팅 화면 표시
+function showChatApp() {
+  authContainer.classList.add('hidden');
+  chatApp.classList.remove('hidden');
+}
+
+// 로그인 폼 처리
+loginForm?.addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const username = document.getElementById('username').value;
+  const password = document.getElementById('password').value;
+
+  try {
+    const response = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password }),
+    });
+
+    const data = await response.json();
+    if (response.ok) {
+      // 로그인 성공 - 토큰 저장 및 화면 전환
+      token = data.token;
+      localStorage.setItem('authToken', token);
+      showChatApp();
+    } else {
+      alert(data.message || 'Login failed');
+    }
+  } catch (err) {
+    console.error('Login error:', err);
+    alert('An error occurred. Please try again.');
+  }
+});
+
+// 로그아웃 처리
+function logout() {
+  localStorage.removeItem('authToken');
+  token = null;
+  showLoginScreen();
+}
+
 
 // Join chat event
 joinChatButton.addEventListener('click', () => {
