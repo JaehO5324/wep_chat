@@ -12,6 +12,9 @@ import cors from 'cors';
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
+import dotenv from 'dotenv';
+dotenv.config();
+
 app.use(express.json());
 app.use(cookieParser());
 app.use(express.static('public')); // 정적 파일 제공
