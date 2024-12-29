@@ -90,4 +90,4 @@ router.post(
   }
 );
 
-module.exports = router;
+export default router; // default export 추가
