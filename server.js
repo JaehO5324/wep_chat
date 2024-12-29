@@ -5,7 +5,14 @@ import mongoose from 'mongoose';
 import jwt from 'jsonwebtoken';
 import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
+import cors from 'cors';
 
+const corsOptions = {
+  origin: 'https://wep-chat.onrender.com', // 클라이언트의 URL
+  credentials: true, // 쿠키 허용
+};
+
+app.use(cors(corsOptions));
 dotenv.config();
 
 const app = express();
@@ -41,6 +48,14 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(express.static('public'));
 
+
+// 인증 상태 확인을 위한 라우트
+app.get('/api/protected', authenticateToken, (req, res) => {
+  // JWT가 유효하면 사용자 정보를 반환
+  res.status(200).json({ user: req.user });
+});
+
+
 // JWT 인증 미들웨어
 const authenticateToken = (req, res, next) => {
   const token = req.cookies.token;
@@ -56,6 +71,7 @@ const authenticateToken = (req, res, next) => {
     next();
   });
 };
+
 
 // 로그인 라우트
 app.post('/api/auth/login', async (req, res) => {
