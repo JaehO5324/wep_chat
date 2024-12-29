@@ -125,7 +125,7 @@ if (loginForm) {
 
     const username = document.getElementById('username').value;
     const password = document.getElementById('password').value;
-
+    console.log({ username, password });
     try {
 		//서버로 로그인 요청 보내기
       const response = await fetch('/api/auth/login', {

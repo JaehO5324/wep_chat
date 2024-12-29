@@ -4,8 +4,8 @@ import jwt from 'jsonwebtoken';
 import { body, validationResult } from 'express-validator';
 import bcryptjs from 'bcryptjs';
 
-const router = express.Router(); // router 선언
-const JWT_SECRET = 'your_jwt_secret_key'; // JWT 비밀 키
+const router = express.Router();
+const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret_key';
 
 // 회원 가입
 router.post(
@@ -19,16 +19,16 @@ router.post(
   async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
+      return res.status(400).json({ success: false, errors: errors.array() });
     }
 
     const { username, password } = req.body;
 
     try {
       const existingUser = await User.findOne({ username });
-	  
       if (existingUser) {
-        return res.status(400).json({ message: 'Username already exists' });
+        console.log(`Username "${username}" already exists.`);
+        return res.status(400).json({ success: false, message: 'Username already exists' });
       }
 
       // 비밀번호 암호화
@@ -38,10 +38,10 @@ router.post(
       const user = new User({ username, password: hashedPassword });
       await user.save();
 
-      res.status(201).json({ message: 'User registered successfully' });
+      res.status(201).json({ success: true, message: 'User registered successfully' });
     } catch (err) {
       console.error(err);
-      res.status(500).json({ message: 'Server error', error: err.message });
+      res.status(500).json({ success: false, message: 'Server error', error: err.message });
     }
   }
 );
@@ -56,42 +56,54 @@ router.post(
   async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
+      return res.status(400).json({ success: false, errors: errors.array() });
     }
 
     const { username, password } = req.body;
 
     try {
+      console.log("User attempting to login:", username);
+
       const user = await User.findOne({ username });
-	  console.log("DB에 저장된 비밀번호:", user.password);
       if (!user) {
-        return res.status(400).json({ message: 'Wrong User ID' });
+        console.log(`Login failed. User "${username}" does not exist.`);
+        return res.status(400).json({ success: false, message: 'Wrong User ID' });
+      }
+
+      if (!user.password) {
+        console.log(`User "${username}" does not have a password stored.`);
+        return res.status(400).json({ success: false, message: 'Invalid password configuration' });
       }
 
       // 비밀번호 확인
       const isMatch = await bcryptjs.compare(password, user.password);
-	  console.log("입력된 비밀번호:", password);
-console.log("DB에 저장된 비밀번호:", user.password);
-console.log("비교 결과:", isMatch);
+      console.log(`Password comparison for user "${username}":`, {
+        inputPassword: password,
+        storedPassword: user.password,
+        comparisonResult: isMatch,
+      });
+
       if (!isMatch) {
-        return res.status(400).json({ message: 'Wrong password' });
+        console.log(`Login failed. Incorrect password for user "${username}".`);
+        return res.status(400).json({ success: false, message: 'Wrong password' });
       }
+
       // JWT 토큰 생성
       const token = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: '1h' });
 
-      // 쿠키에 토큰 저장 (옵션 포함)
+      // 쿠키에 토큰 저장
       res.cookie('token', token, {
-        httpOnly: true, // 클라이언트에서 쿠키 접근 불가
-        secure: process.env.NODE_ENV === 'production', // HTTPS에서만 사용
-        sameSite: 'strict', // CSRF 보호
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
       });
 
-      res.status(200).json({ message: 'Login successful', token });
+      res.status(200).json({ success: true, message: 'Login successful', token });
     } catch (err) {
       console.error(err);
-      res.status(500).json({ message: 'Server error', error: err.message });
+      res.status(500).json({ success: false, message: 'Server error', error: err.message });
     }
   }
 );
 
-export default router; // default export 추가
+export default router;
