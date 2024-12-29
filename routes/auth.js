@@ -76,7 +76,7 @@ router.post(
       }
 
       // 비밀번호 확인
-      const isMatch = await bcryptjs.compare(password, user.password);
+      const isMatch = await bcryptjs.compare(this.password, user.password);
       console.log(`Password comparison for user "${username}":`, {
         inputPassword: password,
         storedPassword: user.password,
