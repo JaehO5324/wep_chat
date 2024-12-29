@@ -19,7 +19,6 @@ app.use(cors());
 app.use('/api/auth', authRoutes); // 회원 가입 및 로그인 관련 라우트
 app.use('/api', protectedRoutes); // 보호된 라우트
 app.use(express.urlencoded({ extended: true })); // URL-encoded 본문 파싱
-app.use('/api', router); // /api/login
 //유저 정보 스키마
 const userSchema = new mongoose.Schema({
   username: { type: String, unique: true, required: true },
