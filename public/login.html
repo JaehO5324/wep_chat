@@ -20,7 +20,7 @@
       </div>
       <button type="submit">Login</button>
     </form>
-    <p>Don't have an account? <a href="signup.html">Sign Up</a></p>
+    <p>Don't have an account? <a href="/signup.html">Sign Up</a></p>
   </div>
   <script>
     const loginForm = document.getElementById('login-form');
@@ -28,7 +28,6 @@
       e.preventDefault();
       const username = document.getElementById('username').value;
       const password = document.getElementById('password').value;
-		  localStorage.setItem('token', data.token); // JWT 저장
 
       try {
         const response = await fetch('/api/auth/login', {
@@ -37,12 +36,11 @@
           body: JSON.stringify({ username, password }),
         });
 
-        const data = await response.json();
         if (response.ok) {
           alert('Login successful');
-		  localStorage.setItem('token', data.token); // JWT 저장
-          window.location.href = '/index.html'; // 로그인 성공 시 채팅 페이지로 이동
+          window.location.href = '/index.html';
         } else {
+          const data = await response.json();
           alert(data.message || 'Login failed');
         }
       } catch (err) {

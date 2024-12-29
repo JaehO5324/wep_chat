@@ -32,18 +32,27 @@
       </div>
     </div>
   </div>
-
-  <script>
-    // JWT 확인
-    const token = localStorage.getItem('token');
-    if (!token) {
-      // 로그인이 안 되어 있으면 login.html로 리디렉션
+  
+<script>
+  fetch('/api/protected', {
+    method: 'GET',
+    credentials: 'include', // 쿠키 포함
+  })
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error('Authentication failed');
+      }
+      return response.json();
+    })
+    .then((data) => {
+      console.log('Protected data:', data);
+    })
+    .catch((err) => {
+      console.error(err.message);
       window.location.href = '/login.html';
-    } else {
-      console.log('User is authenticated');
-      // 추가적으로 서버에서 토큰 검증 요청을 보낼 수도 있음
-    }
-  </script>
+    });
+</script>
+
   
 </body>  <!-- Socket.IO 클라이언트 -->
   <script src="/socket.io/socket.io.js"></script>
