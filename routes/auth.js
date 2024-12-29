@@ -102,6 +102,8 @@ process.stdout.write(`User attempting to login: ${username}\n`);
   storedPassword: user.password,
   comparisonResult: isMatch,
 });
+const newHash = await bcrypt.hash(password, 10);
+console.log('새로운 해시:', newHash);
 
 console.log('입력된 비밀번호:', password);
 console.log('저장된 비밀번호 해시:', user.password);
