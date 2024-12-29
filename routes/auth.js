@@ -18,7 +18,7 @@ const password = 'wogh0324';
 const debugHash = '$2a$10$RxoftyoBDV6xO0I1ydjtcOy5y6KvEVL/P3hrfmQ9425ee1A7EWEwC';
 const DebugMatch = await bcryptjs.compare(password, debugHash);
 console.log('Comparison result:', DebugMatch);
-const hashedPassword = '';
+let hashedPassword = '';
 
 
 (async () => {
