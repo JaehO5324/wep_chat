@@ -1,4 +1,4 @@
-const jwt = require('jsonwebtoken');
+import jwt from 'jsonwebtoken';
 const JWT_SECRET = 'your_jwt_secret_key';
 
 const authMiddleware = (req, res, next) => {
@@ -17,4 +17,4 @@ const authMiddleware = (req, res, next) => {
   }
 };
 
-module.exports = authMiddleware;
+export default authMiddleware; // default로 내보내기
