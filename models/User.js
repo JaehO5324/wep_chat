@@ -24,4 +24,4 @@ console.log('비밀번호 비교 결과:', isMatch);
 
 
 const User = mongoose.model('User', userSchema);
-module.exports = User;
+export default User; // ESM 방식
