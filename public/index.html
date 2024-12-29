@@ -34,10 +34,26 @@
   </div>
 <script src="/socket.io/socket.io.js"></script>
 <script>
-const socket = io({
-  auth: {
-    token: localStorage.getItem('token'), // JWT를 WebSocket 인증에 사용
-  },
+
+//jwt 확인
+document.addEventListener('DOMContentLoaded', () => {
+  fetch('/api/protected', {
+    method: 'GET',
+    credentials: 'include', // 쿠키를 요청에 포함
+  })
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error('Authentication failed');
+      }
+      return response.json();
+    })
+    .then((data) => {
+      console.log('User authenticated:', data.user);
+    })
+    .catch((err) => {
+      console.error(err.message);
+      window.location.href = '/login.html';
+    });
 });
 
 // 이전 메시지 로드

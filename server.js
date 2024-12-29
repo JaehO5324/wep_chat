@@ -47,7 +47,7 @@ app.use(express.static('public'));
 
 // JWT 인증 미들웨어
 const authenticateToken = (req, res, next) => {
-  const token = req.cookies.token;
+  const token = req.cookies.token; // 쿠키에서 JWT 가져오기
   if (!token) {
     return res.status(401).json({ message: 'Access denied' });
   }
