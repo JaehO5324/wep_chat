@@ -64,11 +64,15 @@ app.post('/api/auth/register', async (req, res) => {
 app.post('/api/auth/login', async (req, res) => {
   const { username, password } = req.body;
   try {
-    const user = await User.findOne({ username });
-    if (!user || !(await bcryptjs.compare(password, user.password))) {
-      return res.status(401).json({ success: false, message: 'Invalid username or password' });
-    }
+    const user = await User.findOne({ username: req.body.username });
+if (!user) {
+  return res.status(404).json({ message: '사용자가 존재하지 않습니다.' });
+}
 
+const isMatch = await user.comparePassword(req.body.password);
+if (!isMatch) {
+  return res.status(401).json({ message: '비밀번호가 틀렸습니다.' });
+}
     const token = jwt.sign({ id: user._id, username: user.username }, 'your-secret-key', { expiresIn: '1h' });
     res.json({ success: true, token });
   } catch (err) {

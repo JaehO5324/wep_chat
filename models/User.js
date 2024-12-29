@@ -18,6 +18,9 @@ userSchema.pre('save', async function (next) {
 userSchema.methods.comparePassword = async function (password) {
   return bcryptjs.compare(password, this.password);
 };
+// 디버깅용
+const isMatch = await user.comparePassword(req.body.password);
+console.log('비밀번호 비교 결과:', isMatch);
 
 
 const User = mongoose.model('User', userSchema);
