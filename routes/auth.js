@@ -1,6 +1,6 @@
 const express = require('express');
 const User = require('../models/User'); // User 모델 가져오기
-const bcrypt = require('bcrypt'); // 비밀번호 암호화 라이브러리
+const bcrypt = require('bcryptjs'); // 비밀번호 암호화 라이브러리
 const jwt = require('jsonwebtoken');
 const { body, validationResult } = require('express-validator');
 
