@@ -47,15 +47,6 @@ const userSchema = new mongoose.Schema({
 const User = mongoose.model('User', userSchema);
 
 
-
-
-// 인증 상태 확인을 위한 라우트
-app.get('/api/protected', authenticateToken, (req, res) => {
-  // JWT가 유효하면 사용자 정보를 반환
-  res.status(200).json({ user: req.user });
-});
-
-
 // JWT 인증 미들웨어
 const authenticateToken = (req, res, next) => {
   const token = req.cookies.token;
@@ -72,6 +63,12 @@ const authenticateToken = (req, res, next) => {
   });
 };
 
+
+// 인증 상태 확인을 위한 라우트
+app.get('/api/protected', authenticateToken, (req, res) => {
+  // JWT가 유효하면 사용자 정보를 반환
+  res.status(200).json({ user: req.user });
+});
 
 // 로그인 라우트
 app.post('/api/auth/login', async (req, res) => {
