@@ -23,7 +23,8 @@ const userSchema = new mongoose.Schema({
 });
 
 module.exports = mongoose.model('users', userSchema);
-
+const token = localStorage.getItem('authToken'); // authToken 기반 확인
+localStorage.setItem('authToken', data.token); // 서버가 토큰을 반환한다고 가정
 // 초기 렌더링
 window.onload = () => {
   if (token) {
