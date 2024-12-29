@@ -16,10 +16,6 @@ let username = localStorage.getItem('username');
 
 // 로컬 저장소에서 로그인 상태 확인
 const token = localStorage.getItem('authToken');
-
-const data = await response.json(); 
-	  
-localStorage.setItem('authToken', data.token); // 서버가 토큰을 반환한다고 가정
 // 초기 렌더링
 window.onload = () => {
   if (token) {
@@ -30,6 +26,32 @@ window.onload = () => {
     showLoginScreen();
   }
 };
+async function login(username, password) {
+  try {
+    const response = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      alert(errorData.message || 'Login failed');
+      return;
+    }
+
+    const data = await response.json(); // JSON 데이터를 파싱
+    localStorage.setItem('authToken', data.token); // 토큰 저장
+    alert('Login successful!'); // 성공 메시지
+    showChatApp(); // 채팅 화면 표시
+  } catch (err) {
+    console.error('Error during login:', err);
+    alert('An error occurred. Please try again.');
+  }
+}
+
+
+
 
 // 로그인 화면 표시
 function showLoginScreen() {
