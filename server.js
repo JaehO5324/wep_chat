@@ -6,6 +6,7 @@ import jwt from 'jsonwebtoken';
 import bcryptjs from 'bcryptjs';
 import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
+
 dotenv.config();
 
 const app = express();
@@ -14,20 +15,24 @@ const io = new Server(server);
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret';
 
-app.use(express.json());
-app.use(cookieParser());
-app.use(express.static('public')); // 정적 파일 제공
-app.use(express.urlencoded({ extended: true })); // URL-encoded 본문 파싱
-
 // MongoDB 연결
 mongoose.connect(process.env.MONGO_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 })
-  .then(() => console.log('Connected to MongoDB Atlas'))
+  .then(() => console.log('Connected to MongoDB'))
   .catch((err) => console.error('MongoDB connection error:', err));
 
-// 유저 정보 스키마
+// 메시지 스키마 정의
+const messageSchema = new mongoose.Schema({
+  user: String,
+  message: String,
+  timestamp: { type: Date, default: Date.now },
+});
+
+const Message = mongoose.model('Message', messageSchema);
+
+// 유저 스키마 정의
 const userSchema = new mongoose.Schema({
   username: { type: String, unique: true, required: true },
   password: { type: String, required: true },
@@ -35,9 +40,13 @@ const userSchema = new mongoose.Schema({
 
 const User = mongoose.model('User', userSchema);
 
+app.use(express.json());
+app.use(cookieParser());
+app.use(express.static('public'));
+
 // JWT 인증 미들웨어
 const authenticateToken = (req, res, next) => {
-  const token = req.cookies.token; // 쿠키에서 JWT 추출
+  const token = req.cookies.token;
   if (!token) {
     return res.status(401).json({ message: 'Access denied' });
   }
@@ -46,7 +55,7 @@ const authenticateToken = (req, res, next) => {
     if (err) {
       return res.status(403).json({ message: 'Invalid or expired token' });
     }
-    req.user = user; // 인증된 사용자 정보 저장
+    req.user = user;
     next();
   });
 };
@@ -84,10 +93,10 @@ app.post('/api/auth/login', async (req, res) => {
     const token = jwt.sign({ id: user._id, username: user.username }, JWT_SECRET, { expiresIn: '1h' });
 
     res.cookie('token', token, {
-      httpOnly: true, // 클라이언트에서 접근 불가
-      secure: process.env.NODE_ENV === 'production', // HTTPS에서만 동작 (프로덕션 환경)
-      sameSite: 'strict', // 동일 출처에서만 동작
-      maxAge: 3600000, // 쿠키 유효 기간 (1시간)
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 3600000,
     });
 
     res.status(200).json({ success: true, message: 'Login successful' });
@@ -107,16 +116,35 @@ app.post('/api/auth/logout', (req, res) => {
   res.status(200).json({ message: 'Logout successful' });
 });
 
-// 보호된 라우트
-app.get('/api/protected', authenticateToken, (req, res) => {
-  res.status(200).json({ message: 'Welcome to the protected route', user: req.user });
-});
-
 // WebSocket 처리
 io.on('connection', async (socket) => {
-  console.log('A user connected');
+  console.log('A user connected:', socket.id);
+
+  // 이전 메시지 로드
+  try {
+    const messages = await Message.find().sort({ timestamp: 1 });
+    socket.emit('load messages', messages);
+  } catch (err) {
+    console.error('Error loading messages:', err);
+  }
+
+  // 클라이언트로부터 메시지 수신
+  socket.on('chat message', async (data) => {
+    const { user, message } = data;
+    try {
+      // 메시지 저장
+      const newMessage = new Message({ user, message });
+      await newMessage.save();
+
+      // 메시지 모든 클라이언트에 브로드캐스트
+      io.emit('chat message', { user, message, timestamp: newMessage.timestamp });
+    } catch (err) {
+      console.error('Error saving message:', err);
+    }
+  });
+
   socket.on('disconnect', () => {
-    console.log('A user disconnected');
+    console.log('A user disconnected:', socket.id);
   });
 });
 

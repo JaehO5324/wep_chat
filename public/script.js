@@ -67,12 +67,24 @@ function showChatApp() {
 
 // 채팅 메시지 전송 처리
 sendButton?.addEventListener('click', () => {
-  const message = messageBox.value.trim();
+	
+ const messageInput = document.getElementById('message-input').value;
 
-  if (message) {
-    socket.emit('chat message', { user: username, message });
-    messageBox.value = ''; // 입력 필드 초기화
+  if (messageInput.trim() !== '') {
+    const messageContainer = document.getElementById('messages');
+
+    // 메시지 추가
+    const messageElement = document.createElement('div');
+    messageElement.classList.add('message', 'me'); // 스타일 적용
+    messageElement.textContent = messageInput;
+    messageContainer.appendChild(messageElement);
+
+    // 입력 필드 초기화
+    document.getElementById('message-input').value = '';
+  } else {
+    alert('Please type a message!');
   }
+  
 });
 
 // 서버에서 메시지 수신

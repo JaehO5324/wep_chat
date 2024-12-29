@@ -21,7 +21,7 @@
     <!-- 채팅 영역 -->
     <div id="chat-area">
       <!-- 대화창 -->
-      <div id="messages">
+      <div id="messages" style="height: 300px; overflow-y: scroll;">
         <!-- 메시지가 동적으로 추가됨 -->
       </div>
 
@@ -32,26 +32,57 @@
       </div>
     </div>
   </div>
-  
+<script src="/socket.io/socket.io.js"></script>
 <script>
-  fetch('/api/protected', {
-    method: 'GET',
-    credentials: 'include', // 쿠키 포함
-  })
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error('Authentication failed');
-      }
-      return response.json();
-    })
-    .then((data) => {
-      console.log('Protected data:', data);
-    })
-    .catch((err) => {
-      console.error(err.message);
-      window.location.href = '/login.html';
+  const socket = io();
+
+  // 이전 메시지 로드
+  socket.on('load messages', (messages) => {
+    const messageContainer = document.getElementById('messages');
+    messages.forEach((data) => {
+      const messageElement = document.createElement('div');
+      messageElement.classList.add('message');
+      const time = new Date(data.timestamp).toLocaleTimeString();
+      messageElement.textContent = `${data.user} (${time}): ${data.message}`;
+      messageContainer.appendChild(messageElement);
     });
+  });
+
+  // 메시지 전송
+  document.getElementById('send-button').addEventListener('click', () => {
+    const messageInput = document.getElementById('message-input').value;
+    const username = 'User'; // 로그인된 사용자 이름을 가져와 사용
+
+    if (messageInput.trim() !== '') {
+      // 서버로 메시지 전송
+      socket.emit('chat message', { user: username, message: messageInput });
+
+      // UI에 전송된 메시지 추가
+      const messageContainer = document.getElementById('messages');
+      const messageElement = document.createElement('div');
+      messageElement.classList.add('message', 'me');
+      const time = new Date().toLocaleTimeString();
+      messageElement.textContent = `You (${time}): ${messageInput}`;
+      messageContainer.appendChild(messageElement);
+
+      // 입력 필드 초기화
+      document.getElementById('message-input').value = '';
+    } else {
+      alert('Please type a message!');
+    }
+  });
+
+  // 서버로부터 메시지 수신
+  socket.on('chat message', (data) => {
+    const messageContainer = document.getElementById('messages');
+    const messageElement = document.createElement('div');
+    messageElement.classList.add('message');
+    const time = new Date(data.timestamp).toLocaleTimeString();
+    messageElement.textContent = `${data.user} (${time}): ${data.message}`;
+    messageContainer.appendChild(messageElement);
+  });
 </script>
+
 
   
 </body>  <!-- Socket.IO 클라이언트 -->
