@@ -19,6 +19,10 @@ body {
   width: 100%;
   max-width: 400px;
 }
+
+.hidden {
+  display: none;
+}
 h1 {
   margin-bottom: 20px;
 }
@@ -179,7 +183,4 @@ a:hover {
 
 #send-button:hover {
   background-color: #0056b3;
-}
-.hidden {
-  display: none;
 }

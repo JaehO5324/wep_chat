@@ -26,7 +26,7 @@ module.exports = mongoose.model('users', userSchema);
 
 // 초기 렌더링
 window.onload = () => {
-  if (username) {
+  if (token) {
     // 로그인 상태인 경우 채팅 화면 표시
     showChatApp();
   } else {
