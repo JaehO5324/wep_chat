@@ -1,104 +1,36 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>익명 고민 상담</title>
-  <link rel="stylesheet" href="/styles.css">
-</head>
-<body>
-   
-  
-  <div id="chat-app" class= "hidden">
-    <!-- 사용자 목록 -->
-    <div id="user-list">
-      <h2>Chat</h2>
-      <ul id="users">
-        <!-- 사용자 목록이 동적으로 추가됨 -->
-      </ul>
-    </div>
-
-    <!-- 채팅 영역 -->
-    <div id="chat-area">
-      <!-- 대화창 -->
-      <div id="messages" style="height: 300px; overflow-y: scroll;">
-        <!-- 메시지가 동적으로 추가됨 -->
-      </div>
-
-      <!-- 입력 영역 -->
-      <div id="message-input-area">
-        <input type="text" id="message-input" placeholder="Type your message..." />
-        <button id="send-button">Send</button>
-      </div>
-    </div>
-  </div>
-<script src="/socket.io/socket.io.js"></script>
 <script>
-
-//jwt 확인
-document.addEventListener('DOMContentLoaded', () => {
-  fetch('/api/protected', {
-    method: 'GET',
-    credentials: 'include', // 쿠키를 요청에 포함
-  })
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error('Authentication failed');
-      }
-      return response.json();
+  document.addEventListener('DOMContentLoaded', () => {
+    fetch('/api/protected', {
+      method: 'GET',
+      credentials: 'include',
     })
-    .then((data) => {
-      console.log('User authenticated:', data.user);
-    })
-    .catch((err) => {
-      console.error(err.message);
-      window.location.href = '/login.html';
-    });
-});
-
-// 이전 메시지 로드
-socket.on('load messages', (messages) => {
-  const messageContainer = document.getElementById('messages');
-  messages.forEach((data) => {
-    const messageElement = document.createElement('div');
-    messageElement.classList.add('message');
-    const time = new Date(data.timestamp).toLocaleTimeString();
-    messageElement.textContent = `${data.user} (${time}): ${data.message}`;
-    messageContainer.appendChild(messageElement);
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error('Authentication failed');
+        }
+        return response.json();
+      })
+      .then((data) => {
+        console.log('Authenticated user:', data.user);
+      })
+      .catch((err) => {
+        console.error(err);
+        window.location.href = '/login.html';
+      });
   });
-});
 
-// 메시지 전송
-document.getElementById('send-button').addEventListener('click', () => {
-  const messageInput = document.getElementById('message-input').value;
+  const socket = io({
+    auth: {
+      token: document.cookie.split('token=')[1], // 쿠키에서 JWT 추출
+    },
+  });
 
-  if (messageInput.trim() !== '') {
-    // 서버로 메시지 전송
-    socket.emit('chat message', { message: messageInput });
+  socket.on('load messages', (messages) => {
+    messages.forEach((msg) => console.log(msg));
+  });
 
-    // 입력 필드 초기화
-    document.getElementById('message-input').value = '';
-  } else {
-    alert('Please type a message!');
-  }
-});
-
-// 서버로부터 메시지 수신
-socket.on('chat message', (data) => {
-  const messageContainer = document.getElementById('messages');
-  const messageElement = document.createElement('div');
-  messageElement.classList.add('message');
-  const time = new Date(data.timestamp).toLocaleTimeString();
-  messageElement.textContent = `${data.user} (${time}): ${data.message}`;
-  messageContainer.appendChild(messageElement);
-});
-
+  document.getElementById('send-button').addEventListener('click', () => {
+    const message = document.getElementById('message-input').value;
+    socket.emit('chat message', { message });
+  });
 </script>
-
-
-  
-</body>  <!-- Socket.IO 클라이언트 -->
-  <script src="/socket.io/socket.io.js"></script>
-  <!-- 클라이언트 로직 -->
-  <script src="/script.js"></script>
-</html>
