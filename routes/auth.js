@@ -6,26 +6,6 @@ import bcryptjs from 'bcryptjs';
 
 const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret_key';
-const app = express();
-
-app.use(express.json()); // JSON 형식의 본문 파싱
-app.use(express.urlencoded({ extended: true })); // URL-encoded 본문 파싱
-
-//디버깅용
-const inputPassword = 'hahaha'; // 입력된 비밀번호
-const storedHash = '$2a$10$tQa/4pQtpoXKnceXhwDf.e6ZL90n6OfxN8gaTpW1XmhvUTTRGyXhe'; // 저장된 해시
-const password = 'wogh0324';
-const debugHash = '$2a$10$RxoftyoBDV6xO0I1ydjtcOy5y6KvEVL/P3hrfmQ9425ee1A7EWEwC';
-const DebugMatch = await bcryptjs.compare(password, debugHash);
-console.log('Comparison result:', DebugMatch);
-
-
-
-(async () => {
-  const isMatch = await bcryptjs.compare(inputPassword, storedHash);
-  console.log('비교 결과:', isMatch);
-})();
-
 
 // 회원 가입
 router.post(
@@ -38,7 +18,6 @@ router.post(
   ],
   async (req, res) => {
     const errors = validationResult(req);
-	console.log('req.body:', req.body);
 
     if (!errors.isEmpty()) {
       return res.status(400).json({ success: false, errors: errors.array() });
@@ -54,13 +33,7 @@ router.post(
       }
 
       // 비밀번호 암호화
-      console.log('암호=', password);
-
- 
- const hashedPassword = await bcryptjs.hash(password, 10);
-  console.log(hashedPassword, password);
-  console.log("다시확인",password)
-
+      const hashedPassword = await bcryptjs.hash(password, 10);
 
       // 새 사용자 생성
       const user = new User({ username, password: hashedPassword });
@@ -83,8 +56,6 @@ router.post(
   ],
   async (req, res) => {
     const errors = validationResult(req);
-	console.log('Validation errors:', errors.array());
-	console.log('Received username:', req.body.username);
 
     if (!errors.isEmpty()) {
       return res.status(400).json({ success: false, errors: errors.array() });
@@ -93,8 +64,8 @@ router.post(
     const { username, password } = req.body;
 
     try {
-      console.log("User attempting to login:", username);
-process.stdout.write(`User attempting to login: ${username}\n`);
+      console.log(`User attempting to login: ${username}`);
+
       const user = await User.findOne({ username });
       if (!user) {
         console.log(`Login failed. User "${username}" does not exist.`);
@@ -108,17 +79,13 @@ process.stdout.write(`User attempting to login: ${username}\n`);
 
       // 비밀번호 확인
       const isMatch = await bcryptjs.compare(password, user.password);
-	  //디버깅
-	  console.log(`Password comparison for user "${username}":`, {
-  inputPassword: password,
-  storedPassword: user.password,
-  comparisonResult: isMatch,
-});
-const newHash = await bcryptjs.hash(password, 10);
-console.log('새로운 해시:', newHash);
 
-console.log('입력된 비밀번호:', password);
-console.log('저장된 비밀번호 해시:', user.password);
+      console.log(`Password comparison for user "${username}":`, {
+        inputPassword: password,
+        storedPassword: user.password,
+        comparisonResult: isMatch,
+      });
+
       if (!isMatch) {
         console.log(`Login failed. Incorrect password for user "${username}".`);
         return res.status(400).json({ success: false, message: 'Wrong password' });

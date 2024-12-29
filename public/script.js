@@ -1,6 +1,9 @@
 // 클라이언트와 서버 간의 WebSocket 설정
 const socket = io();
-
+  auth: {
+    token: getCookie('authToken'), // 쿠키에서 JWT 토큰 가져오기
+  },
+});
 // DOM Elements
 const usernameInput = document.getElementById('username-input');
 const joinChatButton = document.getElementById('join-chat');
@@ -16,7 +19,7 @@ const chatApp = document.getElementById('chat-app');// 채팅화면
 // 사용자 이름
 let username = localStorage.getItem('username');
 
-// JWT 토큰 가져오기 (쿠키에서)
+// 쿠키에서 값 가져오기
 function getCookie(name) {
   const value = `; ${document.cookie}`;
   const parts = value.split(`; ${name}=`);
@@ -66,30 +69,31 @@ function showLoginScreen() {
   chatApp.classList.add('hidden'); // 채팅 화면 숨김
 }
 
-// 채팅 화면 표시
-function showChatApp() {
-  authContainer.classList.add('hidden'); // 로그인 화면 숨김
-  chatApp.classList.remove('hidden'); // 채팅 화면 표시
-}
-
-// 채팅 메시지 전송
-sendButton?.addEventListener('click', () => {
+// 메시지 전송 처리
+sendButton.addEventListener('click', () => {
   const message = messageInput.value.trim();
   if (message) {
-    socket.emit('chat message', { message });
+    socket.emit('chat message', { message }); // 서버로 메시지 전송
     messageInput.value = ''; // 입력 필드 초기화
   } else {
     alert('Please type a message!');
   }
 });
 
-// 서버에서 메시지 수신
+// 서버에서 기존 메시지 로드
+socket.on('load messages', (messages) => {
+  messages.forEach((msg) => {
+    const messageElement = document.createElement('div');
+    messageElement.classList.add('message');
+    messageElement.innerHTML = `<strong>${msg.username}:</strong> ${msg.message}`;
+    messagesDiv.appendChild(messageElement);
+  });
+});
+
+// 서버에서 새 메시지 수신
 socket.on('chat message', (data) => {
   const messageElement = document.createElement('div');
   messageElement.classList.add('message');
-  if (data.username === getCookie('username')) {
-    messageElement.classList.add('me');
-  }
   messageElement.innerHTML = `<strong>${data.username}:</strong> ${data.message}`;
   messagesDiv.appendChild(messageElement);
   messagesDiv.scrollTop = messagesDiv.scrollHeight; // 스크롤 자동 하단 이동

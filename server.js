@@ -133,15 +133,22 @@ io.on('connection', (socket) => {
   Message.find()
     .sort({ timestamp: 1 })
     .then((messages) => socket.emit('load messages', messages));
-
+     .catch((err) => console.error('Error loading messages:', err));
   // 메시지 전송
   socket.on('chat message', async (data) => {
     const newMessage = new Message({
-      username: socket.username || 'Anonymous',
+      username: socket.username,
       message: data.message,
     });
     await newMessage.save();
-    io.emit('chat message', newMessage);
+    io.emit('chat message', {
+        username: newMessage.username,
+        message: newMessage.message,
+        timestamp: newMessage.timestamp,
+      });
+    } catch (err) {
+      console.error('Error saving message:', err);
+    }
   });
 
   // 사용자 연결 해제 처리
