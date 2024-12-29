@@ -19,6 +19,17 @@ joinChatButton.addEventListener('click', () => {
   }
 });
 
+// Dummy users for demo
+const users = ['User 1', 'User 2', 'User 3'];
+
+// Add users to the list
+users.forEach(user => {
+  const li = document.createElement('li');
+  li.textContent = user;
+  userList.appendChild(li);
+});
+
+
 // 사용자 이름 입력 처리
 document.getElementById('username-form').addEventListener('submit', (event) => {
   event.preventDefault();
