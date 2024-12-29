@@ -14,7 +14,7 @@ const server = http.createServer(app);
 const io = new Server(server);
 import dotenv from 'dotenv';
 dotenv.config();
-
+const JWT_SECRET = 'your_jwt_secret';
 app.use(express.json());
 app.use(cookieParser());
 app.use(express.static('public')); // 정적 파일 제공
@@ -22,6 +22,28 @@ app.use(cors());
 app.use('/api/auth', authRoutes); // 회원 가입 및 로그인 관련 라우트
 app.use('/api', protectedRoutes); // 보호된 라우트
 app.use(express.urlencoded({ extended: true })); // URL-encoded 본문 파싱
+const authenticateToken = (req, res, next) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+  if (!token) {
+    return res.status(401).json({ message: 'Access denied' });
+  }
+
+  jwt.verify(token, JWT_SECRET, (err, user) => {
+    if (err) {
+      return res.status(403).json({ message: 'Invalid token' });
+    }
+    req.user = user; // JWT 페이로드를 req.user에 저장
+    next();
+  });
+};
+
+// 보호된 라우트 예제
+app.get('/api/protected', authenticateToken, (req, res) => {
+  res.json({ message: 'Welcome to the protected route', user: req.user });
+});
+
+
 //유저 정보 스키마
 const userSchema = new mongoose.Schema({
   username: { type: String, unique: true, required: true },
