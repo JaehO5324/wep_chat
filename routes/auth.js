@@ -15,8 +15,8 @@ app.use(express.urlencoded({ extended: true })); // URL-encoded 본문 파싱
 const inputPassword = 'hahaha'; // 입력된 비밀번호
 const storedHash = '$2a$10$tQa/4pQtpoXKnceXhwDf.e6ZL90n6OfxN8gaTpW1XmhvUTTRGyXhe'; // 저장된 해시
 const password = 'wogh0324';
-const storedHash = '$2a$10$RxoftyoBDV6xO0I1ydjtcOy5y6KvEVL/P3hrfmQ9425ee1A7EWEwC';
-const DebugMatch = await bcryptjs.compare(password, storedHash);
+const debugHash = '$2a$10$RxoftyoBDV6xO0I1ydjtcOy5y6KvEVL/P3hrfmQ9425ee1A7EWEwC';
+const DebugMatch = await bcryptjs.compare(password, debugHash);
 console.log('Comparison result:', DebugMatch);
 
 
