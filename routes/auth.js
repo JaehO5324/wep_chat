@@ -56,7 +56,9 @@ router.post(
       // 비밀번호 암호화
       console.log('암호=', password);
 
-      const hashedPassword = await bcryptjs.hash(password, 10);
+    if (!storedPassword.startsWith('$2a$')) {
+  storedPassword = await bcryptjs.hash(storedPassword, 10);
+}
 
       // 새 사용자 생성
       const user = new User({ username, password: hashedPassword });
