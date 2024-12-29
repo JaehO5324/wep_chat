@@ -25,8 +25,9 @@ mongoose.connect(process.env.MONGO_URI, {
 
 // 메시지 스키마 정의
 const messageSchema = new mongoose.Schema({
-  user: String,
-  message: String,
+  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  username: { type: String, required: true },
+  message: { type: String, required: true },
   timestamp: { type: Date, default: Date.now },
 });
 
@@ -116,35 +117,56 @@ app.post('/api/auth/logout', (req, res) => {
   res.status(200).json({ message: 'Logout successful' });
 });
 
-// WebSocket 처리
+// WebSocket 인증
+io.use((socket, next) => {
+  const token = socket.handshake.auth.token;
+  if (!token) {
+    return next(new Error('Authentication error'));
+  }
+
+  jwt.verify(token, JWT_SECRET, (err, user) => {
+    if (err) {
+      return next(new Error('Authentication error'));
+    }
+    socket.user = user;
+    next();
+  });
+});
+
+// WebSocket 이벤트 처리
 io.on('connection', async (socket) => {
-  console.log('A user connected:', socket.id);
+  console.log('A user connected:', socket.user.username);
 
   // 이전 메시지 로드
   try {
-    const messages = await Message.find().sort({ timestamp: 1 });
+    const messages = await Message.find().populate('user', 'username').sort({ timestamp: 1 });
     socket.emit('load messages', messages);
   } catch (err) {
     console.error('Error loading messages:', err);
   }
 
-  // 클라이언트로부터 메시지 수신
+  // 메시지 수신 및 저장
   socket.on('chat message', async (data) => {
-    const { user, message } = data;
+    const message = {
+      user: socket.user.id, // 사용자 ID
+      username: socket.user.username, // 사용자 이름
+      message: data.message,
+      timestamp: new Date(),
+    };
+
     try {
-      // 메시지 저장
-      const newMessage = new Message({ user, message });
+      const newMessage = new Message(message);
       await newMessage.save();
 
-      // 메시지 모든 클라이언트에 브로드캐스트
-      io.emit('chat message', { user, message, timestamp: newMessage.timestamp });
+      // 모든 클라이언트에 브로드캐스트
+      io.emit('chat message', message);
     } catch (err) {
       console.error('Error saving message:', err);
     }
   });
 
   socket.on('disconnect', () => {
-    console.log('A user disconnected:', socket.id);
+    console.log('A user disconnected:', socket.user.username);
   });
 });
 

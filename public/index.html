@@ -34,53 +34,49 @@
   </div>
 <script src="/socket.io/socket.io.js"></script>
 <script>
-  const socket = io();
+const socket = io({
+  auth: {
+    token: localStorage.getItem('token'), // JWT를 WebSocket 인증에 사용
+  },
+});
 
-  // 이전 메시지 로드
-  socket.on('load messages', (messages) => {
-    const messageContainer = document.getElementById('messages');
-    messages.forEach((data) => {
-      const messageElement = document.createElement('div');
-      messageElement.classList.add('message');
-      const time = new Date(data.timestamp).toLocaleTimeString();
-      messageElement.textContent = `${data.user} (${time}): ${data.message}`;
-      messageContainer.appendChild(messageElement);
-    });
-  });
-
-  // 메시지 전송
-  document.getElementById('send-button').addEventListener('click', () => {
-    const messageInput = document.getElementById('message-input').value;
-    const username = 'User'; // 로그인된 사용자 이름을 가져와 사용
-
-    if (messageInput.trim() !== '') {
-      // 서버로 메시지 전송
-      socket.emit('chat message', { user: username, message: messageInput });
-
-      // UI에 전송된 메시지 추가
-      const messageContainer = document.getElementById('messages');
-      const messageElement = document.createElement('div');
-      messageElement.classList.add('message', 'me');
-      const time = new Date().toLocaleTimeString();
-      messageElement.textContent = `You (${time}): ${messageInput}`;
-      messageContainer.appendChild(messageElement);
-
-      // 입력 필드 초기화
-      document.getElementById('message-input').value = '';
-    } else {
-      alert('Please type a message!');
-    }
-  });
-
-  // 서버로부터 메시지 수신
-  socket.on('chat message', (data) => {
-    const messageContainer = document.getElementById('messages');
+// 이전 메시지 로드
+socket.on('load messages', (messages) => {
+  const messageContainer = document.getElementById('messages');
+  messages.forEach((data) => {
     const messageElement = document.createElement('div');
     messageElement.classList.add('message');
     const time = new Date(data.timestamp).toLocaleTimeString();
     messageElement.textContent = `${data.user} (${time}): ${data.message}`;
     messageContainer.appendChild(messageElement);
   });
+});
+
+// 메시지 전송
+document.getElementById('send-button').addEventListener('click', () => {
+  const messageInput = document.getElementById('message-input').value;
+
+  if (messageInput.trim() !== '') {
+    // 서버로 메시지 전송
+    socket.emit('chat message', { message: messageInput });
+
+    // 입력 필드 초기화
+    document.getElementById('message-input').value = '';
+  } else {
+    alert('Please type a message!');
+  }
+});
+
+// 서버로부터 메시지 수신
+socket.on('chat message', (data) => {
+  const messageContainer = document.getElementById('messages');
+  const messageElement = document.createElement('div');
+  messageElement.classList.add('message');
+  const time = new Date(data.timestamp).toLocaleTimeString();
+  messageElement.textContent = `${data.user} (${time}): ${data.message}`;
+  messageContainer.appendChild(messageElement);
+});
+
 </script>
 
 
