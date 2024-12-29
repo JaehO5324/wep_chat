@@ -77,6 +77,7 @@ router.post(
 
       // 비밀번호 확인
       const isMatch = await bcryptjs.compare(password, user.password);
+<<<<<<< HEAD
       console.log(`Password comparison for user "${username}":`, {
         inputPassword: password,
         storedPassword: user.password,
@@ -88,6 +89,8 @@ console.log('저장된 비밀번호 해시:', user.password);
 
       });
 
+=======
+>>>>>>> parent of b327fb4 (Debugging)
       if (!isMatch) {
         console.log(`Login failed. Incorrect password for user "${username}".`);
         return res.status(400).json({ success: false, message: 'Wrong password' });
