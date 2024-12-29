@@ -6,6 +6,10 @@ import bcryptjs from 'bcryptjs';
 
 const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret_key';
+const app = express();
+
+app.use(express.json()); // JSON 형식의 본문 파싱
+app.use(express.urlencoded({ extended: true })); // URL-encoded 본문 파싱
 
 // 회원 가입
 router.post(
@@ -18,6 +22,8 @@ router.post(
   ],
   async (req, res) => {
     const errors = validationResult(req);
+	console.log('req.body:', req.body);
+
     if (!errors.isEmpty()) {
       return res.status(400).json({ success: false, errors: errors.array() });
     }
@@ -55,6 +61,9 @@ router.post(
   ],
   async (req, res) => {
     const errors = validationResult(req);
+	console.log('Validation errors:', errors.array());
+	console.log('Received username:', req.body.username);
+
     if (!errors.isEmpty()) {
       return res.status(400).json({ success: false, errors: errors.array() });
     }
@@ -63,7 +72,7 @@ router.post(
 
     try {
       console.log("User attempting to login:", username);
-
+process.stdout.write(`User attempting to login: ${username}\n`);
       const user = await User.findOne({ username });
       if (!user) {
         console.log(`Login failed. User "${username}" does not exist.`);
