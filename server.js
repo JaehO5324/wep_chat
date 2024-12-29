@@ -30,6 +30,23 @@ mongoose.connect('mongodb+srv://toywogh:wogh0324@jaeho.ik5s5.mongodb.net/?retryW
 app.use('/api/auth', authRoutes); // 회원 가입 및 로그인 관련 라우트
 app.use('/api', protectedRoutes); // 보호된 라우트
 
+app.post('/api/auth/login', async (req, res) => {
+  const { username, password } = req.body;
+
+  // 사용자 인증 로직
+  const user = await User.findOne({ username });
+  if (!user || !(await bcrypt.compare(password, user.password))) {
+    return res.status(401).json({ success: false, message: 'Invalid credentials' });
+  }
+
+  // JWT 토큰 생성
+  const token = jwt.sign({ id: user._id, username: user.username }, 'your-secret-key', {
+    expiresIn: '1h',
+  });
+
+  // 성공 응답
+  res.json({ success: true, token });
+});
 
 // 메시지 스키마 정의
 const messageSchema = new mongoose.Schema({
