@@ -7,16 +7,17 @@
   <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
-  <!-- 채팅 화면 -->
-  <div id="chat-app" class="hidden">
+  <div id="chat-app">
+    <!-- 사용자 목록 -->
     <div id="user-list">
       <h2>Chat</h2>
-      <button id="logout-button">Logout</button>
       <ul id="users">
-        <!-- 사용자 목록 -->
+        <!-- 사용자 목록 동적으로 추가 -->
       </ul>
+      <button id="logout-button">Logout</button>
     </div>
 
+    <!-- 채팅 영역 -->
     <div id="chat-area">
       <div id="messages">
         <!-- 메시지가 동적으로 추가 -->
@@ -31,7 +32,6 @@
   <script src="/socket.io/socket.io.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-      // 인증 확인
       fetch('/api/protected', {
         method: 'GET',
         credentials: 'include',
@@ -41,9 +41,6 @@
           return response.json();
         })
         .then((data) => {
-          // 채팅 화면 표시
-          document.getElementById('chat-app').classList.remove('hidden');
-
           const socket = io({
             auth: {
               token: data.token,
@@ -90,7 +87,6 @@
           });
         })
         .catch(() => {
-          // 인증 실패 시 로그인 화면으로 리디렉션
           window.location.href = '/login.html';
         });
     });
