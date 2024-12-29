@@ -63,13 +63,13 @@ router.post(
     try {
       const user = await User.findOne({ username });
       if (!user) {
-        return res.status(400).json({ message: 'Invalid username or password' });
+        return res.status(400).json({ message: 'Wrong User ID' });
       }
 
       // 비밀번호 확인
       const isMatch = await bcryptjs.compare(password, user.password);
       if (!isMatch) {
-        return res.status(400).json({ message: 'Invalid username or password' });
+        return res.status(400).json({ message: 'Wrong password' });
       }
 
       // JWT 토큰 생성
