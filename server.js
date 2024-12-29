@@ -3,6 +3,7 @@ const http = require('http');
 const { Server } = require('socket.io');
 const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
+const router = express.Router();
 
 const app = express();
 const server = http.createServer(app);
@@ -57,7 +58,6 @@ app.post('/api/auth/register', async (req, res) => {
   }
 });
 
-module.exports = router;
 
 
 

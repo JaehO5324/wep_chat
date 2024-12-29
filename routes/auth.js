@@ -1,9 +1,10 @@
 const express = require('express');
 const User = require('../models/User'); // User 모델 가져오기
+const bcrypt = require('bcrypt'); // 비밀번호 암호화 라이브러리
 const jwt = require('jsonwebtoken');
 const { body, validationResult } = require('express-validator');
 
-const router = express.Router();
+const router = express.Router(); // router 선언
 const JWT_SECRET = 'your_jwt_secret_key'; // JWT 비밀 키
 
 // 회원 가입
@@ -29,7 +30,11 @@ router.post(
         return res.status(400).json({ message: 'Username already exists' });
       }
 
-      const user = new User({ username, password });
+      // 비밀번호 암호화
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      // 새 사용자 생성
+      const user = new User({ username, password: hashedPassword });
       await user.save();
 
       res.status(201).json({ message: 'User registered successfully' });
@@ -61,14 +66,22 @@ router.post(
         return res.status(400).json({ message: 'Invalid username or password' });
       }
 
-      const isMatch = await user.comparePassword(password); // User 모델의 comparePassword 메서드 사용
+      // 비밀번호 확인
+      const isMatch = await bcrypt.compare(password, user.password);
       if (!isMatch) {
         return res.status(400).json({ message: 'Invalid username or password' });
       }
 
       // JWT 토큰 생성
       const token = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: '1h' });
-      res.cookie('token', token, { httpOnly: true }); // 쿠키에 토큰 저장
+
+      // 쿠키에 토큰 저장 (옵션 포함)
+      res.cookie('token', token, {
+        httpOnly: true, // 클라이언트에서 쿠키 접근 불가
+        secure: process.env.NODE_ENV === 'production', // HTTPS에서만 사용
+        sameSite: 'strict', // CSRF 보호
+      });
+
       res.status(200).json({ message: 'Login successful', token });
     } catch (err) {
       console.error(err);
@@ -78,4 +91,3 @@ router.post(
 );
 
 module.exports = router;
-
