@@ -58,7 +58,7 @@ router.post(
 
     if (!hashedPassword.startsWith('$2a$')) {
   hashedPassword = await bcryptjs.hash(password, 10);
-  console.log(hashedPassword, password)
+  console.log(hashedPassword, password);
 }
 
       // 새 사용자 생성
