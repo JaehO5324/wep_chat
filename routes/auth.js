@@ -18,7 +18,7 @@ const password = 'wogh0324';
 const debugHash = '$2a$10$RxoftyoBDV6xO0I1ydjtcOy5y6KvEVL/P3hrfmQ9425ee1A7EWEwC';
 const DebugMatch = await bcryptjs.compare(password, debugHash);
 console.log('Comparison result:', DebugMatch);
-
+const hashedPassword = '';
 
 
 (async () => {
@@ -56,8 +56,8 @@ router.post(
       // 비밀번호 암호화
       console.log('암호=', password);
 
-    if (!storedPassword.startsWith('$2a$')) {
-  storedPassword = await bcryptjs.hash(storedPassword, 10);
+    if (!hashedPassword.startsWith('$2a$')) {
+  hashedPassword = await bcryptjs.hash(hashedPassword, 10);
 }
 
       // 새 사용자 생성
