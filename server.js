@@ -8,7 +8,7 @@ import cookieParser from 'cookie-parser';
 import authRoutes from './routes/auth.js'; // 경로 주의
 import protectedRoutes from './routes/protected.js'; // 경로 주의
 import User from './models/User.js';
-import cros from 'cros';
+import cors from 'cors';
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
