@@ -6,7 +6,7 @@ const mongoose = require('mongoose');
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
-
+const User = require('./models/User'); // User 모델 가져오기
 const cookieParser = require('cookie-parser');//?
 
 const authRoutes = require('./routes/auth'); // 회원 가입 및 로그인 라우트
@@ -36,20 +36,38 @@ mongoose.connect('mongodb+srv://toywogh:wogh0324@jaeho.ik5s5.mongodb.net/?retryW
 app.use('/api/auth', authRoutes); // 회원 가입 및 로그인 관련 라우트
 app.use('/api', protectedRoutes); // 보호된 라우트
 
-app.post('/api/auth/login', async (req, res) => {
+app.post('/api/auth/register', async (req, res) => {
   const { username, password } = req.body;
 
-  // 사용자 인증 로직
-  const user = await User.findOne({ username });
-  if (!user || !(await bcrypt.compare(password, user.password))) {
-    return res.status(401).json({ success: false, message: 'Invalid credentials' });
+  try {
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const user = new User({ username, password: hashedPassword });
+    await user.save();
+    res.status(201).json({ success: true, message: 'User registered successfully!' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Error registering user' });
   }
+});
 
-  // JWT 토큰 생성
-  const token = jwt.sign({ id: user._id, username: user.username }, 'your-secret-key', {
-    expiresIn: '1h',
-  });
 
+
+
+
+app.post('/api/auth/login', async (req, res) => {
+  const { username, password } = req.body;
+  try {
+    const user = await User.findOne({ username });
+    if (!user || !(await bcrypt.compare(password, user.password))) {
+      return res.status(401).json({ success: false, message: 'Invalid username or password' });
+    }
+
+    const token = jwt.sign({ id: user._id, username: user.username }, 'your-secret-key', { expiresIn: '1h' });
+    res.json({ success: true, token });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Error logging in' });
+  }
   // 성공 응답
   res.json({ success: true, token });
 });
