@@ -58,23 +58,37 @@
             });
           });
 
-          // 메시지 전송
-          document.getElementById('send-button').addEventListener('click', () => {
-            const messageInput = document.getElementById('message-input');
-            const message = messageInput.value.trim();
-            if (message) {
-              socket.emit('chat message', { message });
-              messageInput.value = '';
-            }
-          });
+  // 이전 메시지 로드
+    socket.on('load messages', (messages) => {
+      const messagesContainer = document.getElementById('messages');
+      messages.forEach((msg) => {
+        const messageElement = document.createElement('div');
+        messageElement.textContent = `${msg.username}: ${msg.message}`;
+        messagesContainer.appendChild(messageElement);
+      });
+    });
 
-          // 새 메시지 수신
-          socket.on('chat message', (message) => {
-            const messageContainer = document.getElementById('messages');
-            const messageElement = document.createElement('div');
-            messageElement.textContent = `${message.username}: ${message.message}`;
-            messageContainer.appendChild(messageElement);
-          });
+    // 메시지 전송
+    document.getElementById('send-button').addEventListener('click', () => {
+      const messageInput = document.getElementById('message-input');
+      const message = messageInput.value.trim();
+      if (message) {
+        // 서버로 메시지 전송
+        socket.emit('chat message', { username: 'YourUsername', message });
+
+        // 메시지 입력 칸 초기화
+        messageInput.value = '';
+      }
+    });
+
+    // 새 메시지 수신
+    socket.on('chat message', (msg) => {
+      const messagesContainer = document.getElementById('messages');
+      const messageElement = document.createElement('div');
+      messageElement.textContent = `${msg.username}: ${msg.message}`;
+      messagesContainer.appendChild(messageElement);
+    });
+  });
 
           // 로그아웃
           document.getElementById('logout-button').addEventListener('click', () => {

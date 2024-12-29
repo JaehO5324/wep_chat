@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login</title>
+  <title>Sign Up</title>
   <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
   <div class="auth-container">
-    <h1>Welcome Back</h1>
-    <p>Please log in to your account</p>
-    <form id="login-form">
+    <h1>Create an Account</h1>
+    <p>Sign up to start chatting</p>
+    <form id="signup-form">
       <div class="form-group">
         <label for="username">Username</label>
         <input
@@ -28,43 +28,42 @@
           type="password"
           id="password"
           name="password"
-          placeholder="Enter your password"
+          placeholder="Create a password"
           required
-          autocomplete="current-password"
+          autocomplete="new-password"
         />
       </div>
-      <button type="submit" class="btn-primary">Login</button>
-      <p class="auth-link">Don't have an account? <a href="/signup.html">Sign up here</a></p>
+      <button type="submit" class="btn-primary">Sign Up</button>
+      <p class="auth-link">Already have an account? <a href="/login.html">Log in</a></p>
     </form>
   </div>
 
   <script>
-    document.getElementById('login-form').addEventListener('submit', async (e) => {
+    document.getElementById('signup-form').addEventListener('submit', async (e) => {
       e.preventDefault();
 
       const username = document.getElementById('username').value.trim();
       const password = document.getElementById('password').value.trim();
 
       try {
-        const response = await fetch('/api/auth/login', {
+        const response = await fetch('/api/auth/register', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({ username, password }),
-          credentials: 'include',
         });
 
         if (!response.ok) {
           const errorData = await response.json();
-          alert(errorData.message || 'Login failed');
+          alert(errorData.message || 'Sign-up failed');
           return;
         }
 
-        alert('Login successful');
-        window.location.href = '/index.html';
+        alert('Sign-up successful');
+        window.location.href = '/login.html';
       } catch (err) {
-        console.error('Login error:', err);
+        console.error('Sign-up error:', err);
         alert('An error occurred. Please try again.');
       }
     });

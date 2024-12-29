@@ -119,14 +119,25 @@ io.on('connection', (socket) => {
   io.emit('update user list', users);
 
   // 클라이언트로부터 메시지 수신
+ // 기존 메시지 로드 및 전송
+  Message.find()
+    .sort({ timestamp: 1 })
+    .then((messages) => {
+      socket.emit('load messages', messages);
+    })
+    .catch((err) => console.error('Error loading messages:', err));
+
+  // 메시지 전송 이벤트 처리
   socket.on('chat message', async (data) => {
-    const message = new Message({
-      user: socket.user.id,
-      username: socket.user.username,
-      message: data.message,
-    });
-    await message.save();
-    io.emit('chat message', { username: socket.user.username, message: data.message });
+    try {
+      const newMessage = new Message({ username: data.username, message: data.message });
+      await newMessage.save();
+
+      // 모든 클라이언트에 메시지 전송
+      io.emit('chat message', newMessage);
+    } catch (err) {
+      console.error('Error saving message:', err);
+    }
   });
 
   // 사용자 연결 해제 처리
