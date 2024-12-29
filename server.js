@@ -18,23 +18,7 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(express.static('public')); // 정적 파일 제공
 
-//JWT  토큰 반환
-app.post('/api/auth/login', async (req, res) => {
-  const { username, password } = req.body;
 
-  try {
-    const user = await User.findOne({ username });
-    if (!user || !(await bcrypt.compare(password, user.password))) {
-      return res.status(401).json({ message: 'Invalid username or password' });
-    }
-
-    const token = jwt.sign({ id: user._id, username: user.username }, 'your-secret-key', { expiresIn: '1h' });
-    res.json({ token }); // 클라이언트로 토큰 반환
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Error logging in' });
-  }
-});
 
 //유저 정보 스키마
 const userSchema = new mongoose.Schema({
