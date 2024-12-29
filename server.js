@@ -8,14 +8,16 @@ import cookieParser from 'cookie-parser';
 import authRoutes from './routes/auth.js'; // 경로 주의
 import protectedRoutes from './routes/protected.js'; // 경로 주의
 import User from './models/User.js';
-
+import cros from 'cros';
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 app.use(express.json());
 app.use(cookieParser());
 app.use(express.static('public')); // 정적 파일 제공
-
+app.use(cors());
+app.use('/api/auth', authRoutes); // 회원 가입 및 로그인 관련 라우트
+app.use('/api', protectedRoutes); // 보호된 라우트
 
 
 //유저 정보 스키마
@@ -33,8 +35,6 @@ mongoose.connect('mongodb+srv://toywogh:wogh0324@jaeho.ik5s5.mongodb.net/?retryW
   .then(() => console.log('Connected to MongoDB Atlas'))
   .catch((err) => console.error('MongoDB connection error:', err));
 
-app.use('/api/auth', authRoutes); // 회원 가입 및 로그인 관련 라우트
-app.use('/api', protectedRoutes); // 보호된 라우트
 
 app.post('/api/auth/register', async (req, res) => {
   const { username, password } = req.body;
