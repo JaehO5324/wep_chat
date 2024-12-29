@@ -121,7 +121,7 @@ if (loginForm) {
    
    if (response.ok) {
         localStorage.setItem('authToken', data.token); // 사용자 이름 저장
-        alert('Login successful!); // 로그인 성공 메시지 표시
+        alert('Login successful!'); // 로그인 성공 메시지 표시
         showChatApp();// 채팅 페이지로 이동
       } else {
         alert(data.message || 'Login failed'); // 오류 메시지 표시
