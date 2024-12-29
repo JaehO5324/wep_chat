@@ -26,6 +26,7 @@ router.post(
 
     try {
       const existingUser = await User.findOne({ username });
+	  
       if (existingUser) {
         return res.status(400).json({ message: 'Username already exists' });
       }
@@ -62,16 +63,19 @@ router.post(
 
     try {
       const user = await User.findOne({ username });
+	  console.log("DB에 저장된 비밀번호:", user.password);
       if (!user) {
         return res.status(400).json({ message: 'Wrong User ID' });
       }
 
       // 비밀번호 확인
       const isMatch = await bcryptjs.compare(password, user.password);
+	  console.log("입력된 비밀번호:", password);
+console.log("DB에 저장된 비밀번호:", user.password);
+console.log("비교 결과:", isMatch);
       if (!isMatch) {
         return res.status(400).json({ message: 'Wrong password' });
       }
-
       // JWT 토큰 생성
       const token = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: '1h' });
 
