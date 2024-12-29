@@ -1,8 +1,8 @@
-const express = require('express');
-const User = require('../models/User'); // User 모델 가져오기
-const bcryptjs = require('bcryptjs'); // 비밀번호 암호화 라이브러리
-const jwt = require('jsonwebtoken');
-const { body, validationResult } = require('express-validator');
+import express from 'express';
+import User from '../models/User.js';
+import jwt from 'jsonwebtoken';
+import { body, validationResult } from 'express-validator';
+import bcryptjs from 'bcryptjs';
 
 const router = express.Router(); // router 선언
 const JWT_SECRET = 'your_jwt_secret_key'; // JWT 비밀 키
