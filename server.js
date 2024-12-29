@@ -86,6 +86,15 @@ app.post('/api/auth/login', async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 });
+// 로그아웃 라우트
+app.post('/api/auth/logout', (req, res) => {
+  res.clearCookie('token', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+  });
+  res.status(200).json({ message: 'Logged out successfully' });
+});
 
 // WebSocket 설정
 io.use((socket, next) => {

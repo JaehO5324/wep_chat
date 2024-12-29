@@ -7,52 +7,42 @@
   <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
-  <div id="loading" style="text-align: center; margin-top: 50px;">Loading...</div>
-
-  <!-- 채팅 앱 UI -->
-  <div id="chat-app" style="display: none;">
-    <div id="user-list" style="border: 1px solid #ccc; padding: 10px; margin-bottom: 10px;">
-      <h3>Online Users</h3>
-      <ul id="users" style="list-style: none; padding: 0; margin: 0;">
-        <!-- 사용자 목록이 여기에 동적으로 추가됩니다 -->
+  <!-- 채팅 화면 -->
+  <div id="chat-app" class="hidden">
+    <div id="user-list">
+      <h2>Chat</h2>
+      <button id="logout-button">Logout</button>
+      <ul id="users">
+        <!-- 사용자 목록 -->
       </ul>
     </div>
-    <div id="messages" style="height: 300px; overflow-y: auto; border: 1px solid #ccc; padding: 10px;">
-      <!-- 메시지 영역 -->
-    </div>
-    <div id="message-input-area" style="margin-top: 10px; display: flex;">
-      <input
-        type="text"
-        id="message-input"
-        placeholder="Type your message..."
-        style="flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 4px;"
-      />
-      <button
-        id="send-button"
-        style="padding: 10px 20px; background-color: #007bff; color: white; border: none; border-radius: 4px; margin-left: 10px;"
-      >
-        Send
-      </button>
+
+    <div id="chat-area">
+      <div id="messages">
+        <!-- 메시지가 동적으로 추가 -->
+      </div>
+      <div id="message-input-area">
+        <input type="text" id="message-input" placeholder="Type your message..." />
+        <button id="send-button">Send</button>
+      </div>
     </div>
   </div>
 
   <script src="/socket.io/socket.io.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
+      // 인증 확인
       fetch('/api/protected', {
         method: 'GET',
         credentials: 'include',
       })
         .then((response) => {
-          if (!response.ok) {
-            throw new Error('Authentication failed');
-          }
+          if (!response.ok) throw new Error('Authentication failed');
           return response.json();
         })
         .then((data) => {
-          console.log('Authenticated user:', data.user);
-          document.getElementById('loading').style.display = 'none';
-          document.getElementById('chat-app').style.display = 'block';
+          // 채팅 화면 표시
+          document.getElementById('chat-app').classList.remove('hidden');
 
           const socket = io({
             auth: {
@@ -60,26 +50,18 @@
             },
           });
 
-          // 서버에서 사용자 목록 업데이트
+          // 사용자 목록 업데이트
           socket.on('update user list', (users) => {
             const userList = document.getElementById('users');
-            userList.innerHTML = ''; // 기존 목록 제거
+            userList.innerHTML = '';
             users.forEach((user) => {
               const listItem = document.createElement('li');
-              listItem.textContent = user.username; // 사용자 이름 표시
+              listItem.textContent = user.username;
               userList.appendChild(listItem);
             });
           });
 
-          // 채팅 메시지 처리
-          socket.on('chat message', (message) => {
-            const messageContainer = document.getElementById('messages');
-            const messageElement = document.createElement('div');
-            messageElement.textContent = `${message.username}: ${message.message}`;
-            messageContainer.appendChild(messageElement);
-          });
-
-          // 메시지 보내기
+          // 메시지 전송
           document.getElementById('send-button').addEventListener('click', () => {
             const messageInput = document.getElementById('message-input');
             const message = messageInput.value.trim();
@@ -88,9 +70,27 @@
               messageInput.value = '';
             }
           });
+
+          // 새 메시지 수신
+          socket.on('chat message', (message) => {
+            const messageContainer = document.getElementById('messages');
+            const messageElement = document.createElement('div');
+            messageElement.textContent = `${message.username}: ${message.message}`;
+            messageContainer.appendChild(messageElement);
+          });
+
+          // 로그아웃
+          document.getElementById('logout-button').addEventListener('click', () => {
+            fetch('/api/auth/logout', {
+              method: 'POST',
+              credentials: 'include',
+            }).then(() => {
+              window.location.href = '/login.html';
+            });
+          });
         })
-        .catch((err) => {
-          console.error(err);
+        .catch(() => {
+          // 인증 실패 시 로그인 화면으로 리디렉션
           window.location.href = '/login.html';
         });
     });
