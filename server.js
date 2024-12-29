@@ -132,7 +132,7 @@ io.on('connection', (socket) => {
    // 메시지 로드
   Message.find()
     .sort({ timestamp: 1 })
-    .then((messages) => socket.emit('load messages', messages));
+    .then((messages) => socket.emit('load messages', messages))
      .catch((err) => console.error('Error loading messages:', err));
   // 메시지 전송
   socket.on('chat message', async (data) => {
