@@ -9,11 +9,12 @@ const messageBox = document.getElementById('message-box');
 const sendButton = document.getElementById('send-button');
 const messagesDiv = document.getElementById('messages');
 const userInfo = document.getElementById('user-info');
-const authContainer = document.getElementById('auth-container');
-const chatApp = document.getElementById('chat-app');
+const authContainer = document.getElementById('auth-container');//로그인 화면
+const chatApp = document.getElementById('chat-app');// 채팅화면
 // 사용자 이름
 let username = localStorage.getItem('username');
-// 사용자 로그인 상태 확인
+
+// 로컬 저장소에서 로그인 상태 확인
 const token = localStorage.getItem('authToken');
 
 //유저 정보 스키마
@@ -23,7 +24,7 @@ const userSchema = new mongoose.Schema({
 });
 
 module.exports = mongoose.model('users', userSchema);
-const token = localStorage.getItem('authToken'); // authToken 기반 확인
+
 localStorage.setItem('authToken', data.token); // 서버가 토큰을 반환한다고 가정
 // 초기 렌더링
 window.onload = () => {
@@ -38,15 +39,14 @@ window.onload = () => {
 
 // 로그인 화면 표시
 function showLoginScreen() {
-  document.getElementById('auth-container').classList.remove('hidden');
-  chatWindow.classList.add('hidden');
+  authContainer.classList.remove('hidden'); // 로그인 화면 표시
+  chatApp.classList.add('hidden'); // 채팅 화면 숨김
 }
 
 // 채팅 화면 표시
 function showChatApp() {
-  document.getElementById('auth-container').classList.add('hidden');
-  chatWindow.classList.remove('hidden');
-  userInfo.textContent = `Logged in as: ${username}`;
+  authContainer.classList.add('hidden'); // 로그인 화면 숨김
+  chatApp.classList.remove('hidden'); // 채팅 화면 표시
 }
 
 // 채팅 메시지 전송 처리

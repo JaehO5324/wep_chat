@@ -159,25 +159,29 @@ a:hover {
 
 #message-input-area {
   display: flex;
+  align-items: center;
   padding: 10px;
-  border-top: 1px solid #ddd;
   background-color: #fff;
+  border-top: 1px solid #ddd;
+
 }
 
 #message-input {
-  flex: 1;
+  flex: 1; /* 입력 필드가 남은 공간을 채움 */
   padding: 10px;
   border: 1px solid #ddd;
   border-radius: 4px;
+  font-size: 16px; /* 입력 필드 글자 크기 */
+  margin-right: 10px; /* 버튼과 간격 */
 }
 
 #send-button {
   padding: 10px 20px;
+  font-size: 16px; /* 버튼 글자 크기 */
   background-color: #007bff;
   color: white;
   border: none;
   border-radius: 4px;
-  margin-left: 10px;
   cursor: pointer;
 }
 
