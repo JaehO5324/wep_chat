@@ -17,7 +17,8 @@ let username = localStorage.getItem('username');
 // 로컬 저장소에서 로그인 상태 확인
 const token = localStorage.getItem('authToken');
 
-
+const data = await response.json(); 
+	  
 localStorage.setItem('authToken', data.token); // 서버가 토큰을 반환한다고 가정
 // 초기 렌더링
 window.onload = () => {
@@ -80,7 +81,7 @@ if (signupForm) {
         body: JSON.stringify({ username, password }),
       });
 
-      const data = await response.json(); //1
+
       if (response.ok) {
         alert(data.message); // 회원 가입 성공 메시지 표시
         window.location.href = '/login.html'; // 로그인 페이지로 이동
