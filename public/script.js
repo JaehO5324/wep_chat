@@ -9,9 +9,20 @@ const messageBox = document.getElementById('message-box');
 const sendButton = document.getElementById('send-button');
 const messagesDiv = document.getElementById('messages');
 const userInfo = document.getElementById('user-info');
-
+const authContainer = document.getElementById('auth-container');
+const chatApp = document.getElementById('chat-app');
 // 사용자 이름
 let username = localStorage.getItem('username');
+// 사용자 로그인 상태 확인
+const token = localStorage.getItem('authToken');
+
+//유저 정보 스키마
+const userSchema = new mongoose.Schema({
+  username: { type: String, unique: true, required: true },
+  password: { type: String, required: true },
+});
+
+module.exports = mongoose.model('users', userSchema);
 
 // 초기 렌더링
 window.onload = () => {
