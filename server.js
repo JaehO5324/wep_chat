@@ -6,16 +6,18 @@ import jwt from 'jsonwebtoken';
 import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
 import cors from 'cors';
-
+const app = express();
 const corsOptions = {
   origin: 'https://wep-chat.onrender.com', // 클라이언트의 URL
   credentials: true, // 쿠키 허용
 };
-
+app.use(express.json());
+app.use(cookieParser());
+app.use(express.static('public'));
 app.use(cors(corsOptions));
 dotenv.config();
 
-const app = express();
+
 const server = http.createServer(app);
 const io = new Server(server);
 
@@ -44,9 +46,7 @@ const userSchema = new mongoose.Schema({
 
 const User = mongoose.model('User', userSchema);
 
-app.use(express.json());
-app.use(cookieParser());
-app.use(express.static('public'));
+
 
 
 // 인증 상태 확인을 위한 라우트
