@@ -1,6 +1,6 @@
 const express = require('express');
 const User = require('../models/User'); // User 모델 가져오기
-const bcrypt = require('bcryptjs'); // 비밀번호 암호화 라이브러리
+const bcryptjs = require('bcryptjs'); // 비밀번호 암호화 라이브러리
 const jwt = require('jsonwebtoken');
 const { body, validationResult } = require('express-validator');
 
@@ -31,7 +31,7 @@ router.post(
       }
 
       // 비밀번호 암호화
-      const hashedPassword = await bcrypt.hash(password, 10);
+      const hashedPassword = await bcryptjs.hash(password, 10);
 
       // 새 사용자 생성
       const user = new User({ username, password: hashedPassword });
@@ -67,7 +67,7 @@ router.post(
       }
 
       // 비밀번호 확인
-      const isMatch = await bcrypt.compare(password, user.password);
+      const isMatch = await bcryptjs.compare(password, user.password);
       if (!isMatch) {
         return res.status(400).json({ message: 'Invalid username or password' });
       }

@@ -43,7 +43,7 @@ app.post('/api/auth/register', async (req, res) => {
   const { username, password } = req.body;
 
   try {
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await bcryptjs.hash(password, 10);
    
      //새로운 사용자 생성
    const user = new User({ username, password: hashedPassword });
@@ -65,7 +65,7 @@ app.post('/api/auth/login', async (req, res) => {
   const { username, password } = req.body;
   try {
     const user = await User.findOne({ username });
-    if (!user || !(await bcrypt.compare(password, user.password))) {
+    if (!user || !(await bcryptjs.compare(password, user.password))) {
       return res.status(401).json({ success: false, message: 'Invalid username or password' });
     }
 
