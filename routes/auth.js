@@ -11,6 +11,16 @@ const app = express();
 app.use(express.json()); // JSON 형식의 본문 파싱
 app.use(express.urlencoded({ extended: true })); // URL-encoded 본문 파싱
 
+//디버깅용
+const inputPassword = 'hahaha'; // 입력된 비밀번호
+const storedHash = '$2a$10$tQa/4pQtpoXKnceXhwDf.e6ZL90n6OfxN8gaTpW1XmhvUTTRGyXhe'; // 저장된 해시
+
+(async () => {
+  const isMatch = await bcrypt.compare(inputPassword, storedHash);
+  console.log('비교 결과:', isMatch);
+})();
+
+
 // 회원 가입
 router.post(
   '/register',
