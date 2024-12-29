@@ -16,7 +16,7 @@ userSchema.pre('save', async function (next) {
 
 // 비밀번호 비교 메서드
 userSchema.methods.comparePassword = async function (password) {
-  return bcryptjs.compare(password, this.password);
+  return bcrypt.compare(password, this.password);
 };
 
 
