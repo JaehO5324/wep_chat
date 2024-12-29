@@ -7,42 +7,41 @@
   <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
-  <!-- 로딩 화면 -->
   <div id="loading" style="text-align: center; margin-top: 50px;">Loading...</div>
 
-  <!-- 채팅 UI -->
+  <!-- 채팅 앱 UI -->
   <div id="chat-app" style="display: none;">
-    <!-- 메시지 영역 -->
-    <div id="messages" style="border: 1px solid #ccc; height: 300px; overflow-y: auto; padding: 10px;">
-      <!-- 메시지가 여기에 동적으로 추가됩니다 -->
+    <div id="user-list" style="border: 1px solid #ccc; padding: 10px; margin-bottom: 10px;">
+      <h3>Online Users</h3>
+      <ul id="users" style="list-style: none; padding: 0; margin: 0;">
+        <!-- 사용자 목록이 여기에 동적으로 추가됩니다 -->
+      </ul>
     </div>
-
-    <!-- 메시지 입력 영역 -->
-    <div id="message-input-area" style="margin-top: 10px;">
+    <div id="messages" style="height: 300px; overflow-y: auto; border: 1px solid #ccc; padding: 10px;">
+      <!-- 메시지 영역 -->
+    </div>
+    <div id="message-input-area" style="margin-top: 10px; display: flex;">
       <input
         type="text"
         id="message-input"
         placeholder="Type your message..."
-        style="width: 80%; padding: 10px; border: 1px solid #ccc; border-radius: 5px;"
+        style="flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 4px;"
       />
       <button
         id="send-button"
-        style="padding: 10px; background-color: #007bff; color: white; border: none; border-radius: 5px;"
+        style="padding: 10px 20px; background-color: #007bff; color: white; border: none; border-radius: 4px; margin-left: 10px;"
       >
         Send
       </button>
     </div>
   </div>
 
-  <!-- Socket.IO 클라이언트 -->
   <script src="/socket.io/socket.io.js"></script>
-  <!-- JavaScript -->
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-      // 인증 요청
       fetch('/api/protected', {
         method: 'GET',
-        credentials: 'include', // httpOnly 쿠키 포함
+        credentials: 'include',
       })
         .then((response) => {
           if (!response.ok) {
@@ -52,29 +51,35 @@
         })
         .then((data) => {
           console.log('Authenticated user:', data.user);
-
-          // UI 표시
           document.getElementById('loading').style.display = 'none';
           document.getElementById('chat-app').style.display = 'block';
 
-          // WebSocket 연결
           const socket = io({
             auth: {
-              token: data.token, // 서버에서 인증된 JWT 전달
+              token: data.token,
             },
           });
 
-          // 서버에서 이전 메시지 로드
-          socket.on('load messages', (messages) => {
-            const messageContainer = document.getElementById('messages');
-            messages.forEach((msg) => {
-              const messageElement = document.createElement('div');
-              messageElement.textContent = `${msg.username}: ${msg.message}`;
-              messageContainer.appendChild(messageElement);
+          // 서버에서 사용자 목록 업데이트
+          socket.on('update user list', (users) => {
+            const userList = document.getElementById('users');
+            userList.innerHTML = ''; // 기존 목록 제거
+            users.forEach((user) => {
+              const listItem = document.createElement('li');
+              listItem.textContent = user.username; // 사용자 이름 표시
+              userList.appendChild(listItem);
             });
           });
 
-          // 메시지 전송 버튼 이벤트
+          // 채팅 메시지 처리
+          socket.on('chat message', (message) => {
+            const messageContainer = document.getElementById('messages');
+            const messageElement = document.createElement('div');
+            messageElement.textContent = `${message.username}: ${message.message}`;
+            messageContainer.appendChild(messageElement);
+          });
+
+          // 메시지 보내기
           document.getElementById('send-button').addEventListener('click', () => {
             const messageInput = document.getElementById('message-input');
             const message = messageInput.value.trim();
@@ -83,18 +88,10 @@
               messageInput.value = '';
             }
           });
-
-          // 서버에서 새 메시지 수신
-          socket.on('chat message', (data) => {
-            const messageContainer = document.getElementById('messages');
-            const messageElement = document.createElement('div');
-            messageElement.textContent = `${data.username}: ${data.message}`;
-            messageContainer.appendChild(messageElement);
-          });
         })
         .catch((err) => {
           console.error(err);
-          window.location.href = '/login.html'; // 인증 실패 시 로그인 화면으로 이동
+          window.location.href = '/login.html';
         });
     });
   </script>

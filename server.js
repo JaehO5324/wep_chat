@@ -7,6 +7,7 @@ import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
 import cors from 'cors';
 const app = express();
+const onlineUsers = new Map(); // 사용자 ID와 이름을 저장
 const corsOptions = {
   origin: 'https://wep-chat.onrender.com', // 클라이언트의 URL
   credentials: true, // 쿠키 허용
@@ -99,14 +100,16 @@ io.use((socket, next) => {
 });
 
 io.on('connection', (socket) => {
-  console.log('User connected:', socket.user.username);
+  console.log('A user connected:', socket.user.username);
 
-  // 이전 메시지 로드
-  Message.find().sort({ timestamp: 1 }).then((messages) => {
-    socket.emit('load messages', messages);
-  });
+  // 사용자 정보 저장
+  onlineUsers.set(socket.id, socket.user);
 
-  // 메시지 저장 및 브로드캐스트
+  // 사용자 목록 업데이트
+  const users = Array.from(onlineUsers.values());
+  io.emit('update user list', users);
+
+  // 클라이언트로부터 메시지 수신
   socket.on('chat message', async (data) => {
     const message = new Message({
       user: socket.user.id,
@@ -117,10 +120,15 @@ io.on('connection', (socket) => {
     io.emit('chat message', { username: socket.user.username, message: data.message });
   });
 
+  // 사용자 연결 해제 처리
   socket.on('disconnect', () => {
-    console.log('User disconnected:', socket.user.username);
+    console.log('A user disconnected:', socket.user.username);
+    onlineUsers.delete(socket.id); // 사용자 제거
+    const users = Array.from(onlineUsers.values());
+    io.emit('update user list', users); // 사용자 목록 업데이트
   });
 });
+
 
 // 서버 실행
 server.listen(3000, () => console.log('Server is running on http://localhost:3000'));
