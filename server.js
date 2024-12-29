@@ -18,7 +18,13 @@ app.use(cookieParser());
 app.use(express.static('public')); // 정적 파일 제공
 
 
+//유저 정보 스키마
+const userSchema = new mongoose.Schema({
+  username: { type: String, unique: true, required: true },
+  password: { type: String, required: true },
+});
 
+module.exports = mongoose.model('users', userSchema);
 // MongoDB 연결
 mongoose.connect('mongodb+srv://toywogh:wogh0324@jaeho.ik5s5.mongodb.net/?retryWrites=true&w=majority&appName=jaeho', {
   useNewUrlParser: true,

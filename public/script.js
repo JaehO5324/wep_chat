@@ -1,7 +1,5 @@
 // 클라이언트와 서버 간의 WebSocket 설정
 const socket = io();
-//mongoose 모듈 불러오기 
-const mongoose = require('mongoose');
 
 // DOM Elements
 const usernameInput = document.getElementById('username-input');
@@ -19,13 +17,6 @@ let username = localStorage.getItem('username');
 // 로컬 저장소에서 로그인 상태 확인
 const token = localStorage.getItem('authToken');
 
-//유저 정보 스키마
-const userSchema = new mongoose.Schema({
-  username: { type: String, unique: true, required: true },
-  password: { type: String, required: true },
-});
-
-module.exports = mongoose.model('users', userSchema);
 
 localStorage.setItem('authToken', data.token); // 서버가 토큰을 반환한다고 가정
 // 초기 렌더링
