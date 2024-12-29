@@ -24,7 +24,7 @@ const userSchema = new mongoose.Schema({
   password: { type: String, required: true },
 });
 
-module.exports = mongoose.model('users', userSchema);
+export default mongoose.model('users', userSchema);
 // MongoDB 연결
 mongoose.connect('mongodb+srv://toywogh:wogh0324@jaeho.ik5s5.mongodb.net/?retryWrites=true&w=majority&appName=jaeho', {
   useNewUrlParser: true,
