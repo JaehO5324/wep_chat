@@ -104,6 +104,7 @@ if (loginForm) {
     const password = document.getElementById('password').value;
 
     try {
+		//서버로 로그인 요청 보내기
       const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -111,7 +112,16 @@ if (loginForm) {
       });
 
       const data = await response.json();
+   //서버 응답 처리
+         // 서버 응답 처리
+      if (!response.ok) {
+        const errorData = await response.json();
+        alert(errorData.message || 'Login failed'); // 오류 메시지 표시
+        return;
+      }
    
+     const data = await response.json();
+	 
    if (response.ok) {
         localStorage.setItem('authToken', data.token); // 사용자 이름 저장
         alert('Login successful!'); // 로그인 성공 메시지 표시
