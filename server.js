@@ -60,6 +60,9 @@ const authenticateToken = (req, res, next) => {
     next();
   });
 };
+app.get('/api/protected', authenticateToken, (req, res) => {
+  res.status(200).json({ user: req.user });
+});
 
 // 회원 가입
 app.post('/api/auth/register', async (req, res) => {
@@ -80,6 +83,7 @@ app.post('/api/auth/register', async (req, res) => {
 app.post('/api/auth/login', async (req, res) => {
   const { username, password } = req.body;
 
+  
   try {
     const user = await User.findOne({ username });
     if (!user) {
@@ -93,17 +97,18 @@ app.post('/api/auth/login', async (req, res) => {
 
     const token = jwt.sign({ id: user._id, username: user.username }, JWT_SECRET, { expiresIn: '1h' });
 
+    // httpOnly 쿠키에 JWT 설정
     res.cookie('token', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 3600000,
+      httpOnly: true, // 클라이언트 스크립트에서 접근 불가
+      secure: process.env.NODE_ENV === 'production', // HTTPS에서만 전송
+      sameSite: 'strict', // 동일 출처에서만 쿠키 전송
+      maxAge: 3600000, // 쿠키 유효 기간 (1시간)
     });
 
-    res.status(200).json({ success: true, message: 'Login successful' });
+    res.status(200).json({ message: 'Login successful' });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ success: false, message: 'Error logging in' });
+    res.status(500).json({ message: 'Server error' });
   }
 });
 
