@@ -1,5 +1,7 @@
 // 클라이언트와 서버 간의 WebSocket 설정
 const socket = io();
+//mongoose 모듈 불러오기 
+const mongoose = require('mongoose');
 
 // DOM Elements
 const usernameInput = document.getElementById('username-input');
