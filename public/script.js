@@ -7,17 +7,26 @@ const joinChatButton = document.getElementById('join-chat');
 const chatWindow = document.getElementById('chat-window');
 const messageBox = document.getElementById('message-box');
 const sendButton = document.getElementById('send-button');
+const messageInput = document.getElementById('message-input');
 const messagesDiv = document.getElementById('messages');
 const userInfo = document.getElementById('user-info');
+const logoutButton = document.getElementById('logout-button');
 const authContainer = document.getElementById('auth-container');//로그인 화면
 const chatApp = document.getElementById('chat-app');// 채팅화면
 // 사용자 이름
 let username = localStorage.getItem('username');
 
-// 로컬 저장소에서 로그인 상태 확인
-const token = localStorage.getItem('authToken');
+// JWT 토큰 가져오기 (쿠키에서)
+function getCookie(name) {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop().split(';').shift();
+  return null;
+}
+
 // 초기 렌더링
 window.onload = () => {
+  const token = getCookie('authToken');
   if (token) {
     // 로그인 상태인 경우 채팅 화면 표시
     showChatApp();
@@ -26,6 +35,8 @@ window.onload = () => {
     showLoginScreen();
   }
 };
+
+// 로그인 요청
 async function login(username, password) {
   try {
     const response = await fetch('/api/auth/login', {
@@ -40,18 +51,14 @@ async function login(username, password) {
       return;
     }
 
-    const data = await response.json(); // JSON 데이터를 파싱
-    localStorage.setItem('authToken', data.token); // 토큰 저장
-    alert('Login successful!'); // 성공 메시지
+    const data = await response.json();
+    alert('Login successful!');
     showChatApp(); // 채팅 화면 표시
   } catch (err) {
     console.error('Error during login:', err);
     alert('An error occurred. Please try again.');
   }
 }
-
-
-
 
 // 로그인 화면 표시
 function showLoginScreen() {
@@ -65,36 +72,25 @@ function showChatApp() {
   chatApp.classList.remove('hidden'); // 채팅 화면 표시
 }
 
-// 채팅 메시지 전송 처리
+// 채팅 메시지 전송
 sendButton?.addEventListener('click', () => {
-	
- const messageInput = document.getElementById('message-input').value;
-
-  if (messageInput.trim() !== '') {
-    const messageContainer = document.getElementById('messages');
-
-    // 메시지 추가
-    const messageElement = document.createElement('div');
-    messageElement.classList.add('message', 'me'); // 스타일 적용
-    messageElement.textContent = messageInput;
-    messageContainer.appendChild(messageElement);
-
-    // 입력 필드 초기화
-    document.getElementById('message-input').value = '';
+  const message = messageInput.value.trim();
+  if (message) {
+    socket.emit('chat message', { message });
+    messageInput.value = ''; // 입력 필드 초기화
   } else {
     alert('Please type a message!');
   }
-  
 });
 
 // 서버에서 메시지 수신
 socket.on('chat message', (data) => {
   const messageElement = document.createElement('div');
   messageElement.classList.add('message');
-  if (data.user === username) {
+  if (data.username === getCookie('username')) {
     messageElement.classList.add('me');
   }
-  messageElement.innerHTML = `<strong>${data.user}:</strong> ${data.message}`;
+  messageElement.innerHTML = `<strong>${data.username}:</strong> ${data.message}`;
   messagesDiv.appendChild(messageElement);
   messagesDiv.scrollTop = messagesDiv.scrollHeight; // 스크롤 자동 하단 이동
 });
@@ -105,8 +101,8 @@ if (signupForm) {
   signupForm.addEventListener('submit', async (e) => {
     e.preventDefault(); // 기본 폼 제출 동작 방지
 
-    const username = document.getElementById('username').value;
-    const password = document.getElementById('password').value;
+    const username = document.getElementById('username').value.trim();
+    const password = document.getElementById('password').value.trim();
 
     try {
       const response = await fetch('/api/auth/register', {
@@ -115,12 +111,12 @@ if (signupForm) {
         body: JSON.stringify({ username, password }),
       });
 
-
       if (response.ok) {
-        alert(data.message); // 회원 가입 성공 메시지 표시
-        window.location.href = '/login.html'; // 로그인 페이지로 이동
+        alert('Sign-up successful! Please log in.');
+        window.location.href = '/login.html';
       } else {
-        alert(data.message); // 오류 메시지 표시
+        const errorData = await response.json();
+        alert(errorData.message || 'Sign-up failed');
       }
     } catch (err) {
       console.error('Error:', err);
@@ -135,35 +131,24 @@ if (loginForm) {
   loginForm.addEventListener('submit', async (e) => {
     e.preventDefault(); // 기본 폼 제출 동작 방지
 
-    const username = document.getElementById('username').value;
-    const password = document.getElementById('password').value;
-    console.log({ username, password });
+    const username = document.getElementById('username').value.trim();
+    const password = document.getElementById('password').value.trim();
+
     try {
-		//서버로 로그인 요청 보내기
       const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password }),
       });
 
-  
-   //서버 응답 처리
-         // 서버 응답 처리
       if (!response.ok) {
         const errorData = await response.json();
-        alert(errorData.message || 'Login failed'); // 오류 메시지 표시
+        alert(errorData.message || 'Login failed');
         return;
       }
-   
 
-	 
-   if (response.ok) {
-        localStorage.setItem('authToken', data.token); // 사용자 이름 저장
-        alert('Login successful!'); // 로그인 성공 메시지 표시
-        showChatApp();// 채팅 페이지로 이동
-      } else {
-        alert(data.message || 'Login failed'); // 오류 메시지 표시
-      }
+      alert('Login successful!');
+      showChatApp(); // 채팅 화면 표시
     } catch (err) {
       console.error('Error:', err);
       alert('An error occurred. Please try again.');
@@ -172,10 +157,12 @@ if (loginForm) {
 }
 
 // 로그아웃 처리
-const logoutButton = document.getElementById('logout-button');
 if (logoutButton) {
   logoutButton.addEventListener('click', () => {
-    localStorage.removeItem('username');
-    window.location.href = '/login.html'; // 로그인 페이지로 이동
+    fetch('/api/auth/logout', { method: 'POST', credentials: 'include' })
+      .then(() => {
+        document.cookie = 'authToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+        window.location.href = '/login.html';
+      });
   });
 }

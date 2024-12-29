@@ -23,6 +23,8 @@ const server = http.createServer(app);
 const io = new Server(server);
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret';
+// MongoDB 설정
+mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true });
 
 // MongoDB 연결
 mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
@@ -127,17 +129,19 @@ io.on('connection', (socket) => {
     })
     .catch((err) => console.error('Error loading messages:', err));
 
-  // 메시지 전송 이벤트 처리
-  socket.on('chat message', async (data) => {
-    try {
-      const newMessage = new Message({ username: data.username, message: data.message });
-      await newMessage.save();
+   // 메시지 로드
+  Message.find()
+    .sort({ timestamp: 1 })
+    .then((messages) => socket.emit('load messages', messages));
 
-      // 모든 클라이언트에 메시지 전송
-      io.emit('chat message', newMessage);
-    } catch (err) {
-      console.error('Error saving message:', err);
-    }
+  // 메시지 전송
+  socket.on('chat message', async (data) => {
+    const newMessage = new Message({
+      username: socket.username || 'Anonymous',
+      message: data.message,
+    });
+    await newMessage.save();
+    io.emit('chat message', newMessage);
   });
 
   // 사용자 연결 해제 처리
