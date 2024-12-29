@@ -118,12 +118,13 @@ if (loginForm) {
       });
 
       const data = await response.json();
-      if (response.ok) {
-        localStorage.setItem('username', username); // 사용자 이름 저장
-        alert(data.message); // 로그인 성공 메시지 표시
-        window.location.href = '/'; // 채팅 페이지로 이동
+   
+   if (response.ok) {
+        localStorage.setItem('authToken', data.token); // 사용자 이름 저장
+        alert('Login successful!); // 로그인 성공 메시지 표시
+        showChatApp();// 채팅 페이지로 이동
       } else {
-        alert(data.message); // 오류 메시지 표시
+        alert(data.message || 'Login failed'); // 오류 메시지 표시
       }
     } catch (err) {
       console.error('Error:', err);
