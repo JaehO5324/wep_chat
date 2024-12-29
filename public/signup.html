@@ -22,6 +22,44 @@
     </form>
     <p>Already have an account? <a href="login.html">Log In</a></p>
   </div>
-  <script src="script.js"></script>
+  
+  <!-- 클라이언트 스크립트 -->
+  <script>
+    // 회원가입 폼 이벤트 리스너
+    document.getElementById('signup-form').addEventListener('submit', async (e) => {
+      e.preventDefault(); // 기본 폼 제출 동작 방지
+      
+      // 입력값 가져오기
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value.trim();
+      
+      // 입력값 검증
+      if (!username || !password) {
+        alert('Username and password are required.');
+        return;
+      }
+
+      try {
+        // 서버로 POST 요청 보내기
+        const response = await fetch('/api/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password }),
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          alert(data.message); // 회원가입 성공 메시지
+          window.location.href = 'login.html'; // 로그인 페이지로 이동
+        } else {
+          alert(data.message || 'Sign up failed. Please try again.');
+        }
+      } catch (err) {
+        console.error('Error:', err);
+        alert('An error occurred. Please try again.');
+      }
+    });
+  </script>
 </body>
 </html>

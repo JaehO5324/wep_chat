@@ -59,16 +59,21 @@ app.post('/api/auth/register', async (req, res) => {
 
   try {
     const hashedPassword = await bcrypt.hash(password, 10);
-    const user = new User({ username, password: hashedPassword });
-    await user.save();
-    res.status(201).json({ success: true, message: 'User registered successfully!' });
+   
+     //새로운 사용자 생성
+   const user = new User({ username, password: hashedPassword });
+  
+ //사용자 저장  
+  await user.save();
+    re
+	s.status(201).json({ success: true, message: 'User registered successfully!' });
   } catch (err) {
     console.error(err);
     res.status(500).json({ success: false, message: 'Error registering user' });
   }
 });
 
-
+module.exports = router;
 
 
 
