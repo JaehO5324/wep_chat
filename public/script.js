@@ -80,7 +80,7 @@ if (signupForm) {
         body: JSON.stringify({ username, password }),
       });
 
-      const data = await response.json();
+      const data = await response.json(); //1
       if (response.ok) {
         alert(data.message); // 회원 가입 성공 메시지 표시
         window.location.href = '/login.html'; // 로그인 페이지로 이동
@@ -111,7 +111,7 @@ if (loginForm) {
         body: JSON.stringify({ username, password }),
       });
 
-      const data = await response.json();
+  
    //서버 응답 처리
          // 서버 응답 처리
       if (!response.ok) {
@@ -120,7 +120,7 @@ if (loginForm) {
         return;
       }
    
-     const data = await response.json();
+
 	 
    if (response.ok) {
         localStorage.setItem('authToken', data.token); // 사용자 이름 저장
