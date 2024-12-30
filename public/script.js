@@ -43,34 +43,38 @@ function showChatApp() {
   chatApp.classList.remove('hidden');
 }
 
-// 메시지 전송
+// 메시지 전송 처리
 sendButton.addEventListener('click', () => {
   const message = messageInput.value.trim();
+
   if (message) {
+    // WebSocket을 통해 서버로 메시지 전송
     socket.emit('chat message', { message });
+
+    // 클라이언트에 메시지 표시
+    const messageElement = document.createElement('div');
+    messageElement.classList.add('message', 'me');
+    messageElement.textContent = message;
+    messagesDiv.appendChild(messageElement);
+
+    // 메시지 입력창 초기화
     messageInput.value = '';
+    messagesDiv.scrollTop = messagesDiv.scrollHeight; // 스크롤 하단 이동
   } else {
     alert('Please type a message!');
   }
 });
 
-// 서버에서 메시지 로드
-socket.on('load messages', (messages) => {
-  messages.forEach((msg) => {
-    const messageElement = document.createElement('div');
-    messageElement.classList.add('message');
-    messageElement.innerHTML = `<strong>${msg.username}:</strong> ${msg.message}`;
-    messagesDiv.appendChild(messageElement);
-  });
-});
-
-// 서버에서 새 메시지 수신
+// 서버에서 메시지 수신
 socket.on('chat message', (data) => {
   const messageElement = document.createElement('div');
   messageElement.classList.add('message');
+  if (data.username === socket.username) {
+    messageElement.classList.add('me');
+  }
   messageElement.innerHTML = `<strong>${data.username}:</strong> ${data.message}`;
   messagesDiv.appendChild(messageElement);
-  messagesDiv.scrollTop = messagesDiv.scrollHeight;
+  messagesDiv.scrollTop = messagesDiv.scrollHeight; // 스크롤 하단 이동
 });
 
 // 로그아웃 처리

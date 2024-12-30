@@ -99,15 +99,25 @@ io.use((socket, next) => {
 io.on('connection', (socket) => {
   console.log(`User connected: ${socket.username}`);
 
+ // 메시지 로드
+  Message.find()
+    .sort({ timestamp: 1 })
+    .then((messages) => {
+      socket.emit('load messages', messages); // 기존 메시지를 로드
+    })
+    .catch((err) => console.error('Error loading messages:', err));
+
+  // 클라이언트에서 메시지 전송 이벤트 처리
   socket.on('chat message', async (data) => {
     try {
       const newMessage = new Message({
-        username: socket.username,
+        username: socket.username || 'Anonymous', // WebSocket 인증에서 가져온 사용자 이름
         message: data.message,
       });
 
-      await newMessage.save();
+      await newMessage.save(); // 메시지 저장
 
+      // 모든 클라이언트에 메시지 전송
       io.emit('chat message', {
         username: newMessage.username,
         message: newMessage.message,
@@ -117,6 +127,7 @@ io.on('connection', (socket) => {
       console.error('Error saving message:', err);
     }
   });
+
 
   socket.on('disconnect', () => {
     console.log(`User disconnected: ${socket.username}`);
