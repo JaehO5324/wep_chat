@@ -3,9 +3,9 @@ import http from 'http';
 import { Server } from 'socket.io';
 import mongoose from 'mongoose';
 import jwt from 'jsonwebtoken';
+import bcryptjs from 'bcryptjs';
 import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
-import bcryptjs from 'bcryptjs';
 
 dotenv.config();
 
@@ -21,13 +21,12 @@ mongoose
   .then(() => console.log('Connected to MongoDB'))
   .catch((err) => console.error('MongoDB connection error:', err));
 
-// 정적 파일 제공
-app.use(express.static('public'));
-
-// 루트 경로 처리
-app.get('/', (req, res) => {
-  res.sendFile(__dirname + '/public/index.html');
+// 사용자 스키마
+const userSchema = new mongoose.Schema({
+  username: { type: String, required: true },
+  password: { type: String, required: true },
 });
+const User = mongoose.model('User', userSchema);
 
 // 메시지 스키마
 const messageSchema = new mongoose.Schema({
@@ -37,18 +36,18 @@ const messageSchema = new mongoose.Schema({
 });
 const Message = mongoose.model('Message', messageSchema);
 
-//유저 스키마
-const userSchema = new mongoose.Schema({
-  username: { type: String, required: true },
-  password: { type: String, required: true },
+// 미들웨어 설정
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
+app.use(express.static('public'));
+
+// 루트 경로 처리
+app.get('/', (req, res) => {
+  res.sendFile(__dirname + '/public/index.html');
 });
 
-const User = mongoose.model('User', userSchema);
-
-// JWT 인증 라우터
-app.use(cookieParser());
-app.use(express.json());
-
+// 로그인 라우터
 app.post('/api/auth/login', async (req, res) => {
   const { username, password } = req.body;
 
@@ -77,33 +76,47 @@ app.post('/api/auth/login', async (req, res) => {
     res.status(500).json({ message: 'Internal server error' });
   }
 });
-  res.cookie('authToken', token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
-  });
 
-  res.status(200).json({ message: 'Login successful' });
-});
-
+// 로그아웃 라우터
 app.post('/api/auth/logout', (req, res) => {
   res.clearCookie('authToken');
-  res.status(200).json({ message: 'Logged out successfully' })
+  res.status(200).json({ message: 'Logged out successfully' });
 });
 
+// WebSocket 인증
 io.use((socket, next) => {
   const token = socket.handshake.auth.token;
   if (!token) return next(new Error('Authentication error'));
 
   jwt.verify(token, JWT_SECRET, (err, user) => {
     if (err) return next(new Error('Invalid token'));
-    socket.username = user.username; // 사용자의 이름 저장
+    socket.username = user.username;
     next();
   });
 });
 
+// WebSocket 이벤트
 io.on('connection', (socket) => {
   console.log(`User connected: ${socket.username}`);
+
+  socket.on('chat message', async (data) => {
+    try {
+      const newMessage = new Message({
+        username: socket.username,
+        message: data.message,
+      });
+
+      await newMessage.save();
+
+      io.emit('chat message', {
+        username: newMessage.username,
+        message: newMessage.message,
+        timestamp: newMessage.timestamp,
+      });
+    } catch (err) {
+      console.error('Error saving message:', err);
+    }
+  });
 
   socket.on('disconnect', () => {
     console.log(`User disconnected: ${socket.username}`);
