@@ -6,6 +6,7 @@ import jwt from 'jsonwebtoken';
 import bcryptjs from 'bcryptjs';
 import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
+import Message from './models/Message.js';
 
 dotenv.config();
 
@@ -30,12 +31,12 @@ const User = mongoose.model('User', userSchema);
 
 // 메시지 스키마
 const messageSchema = new mongoose.Schema({
-  username: String,
-  message: String,
-  timestamp: { type: Date, default: Date.now },
-});
+  username: { type: String, required: true }, // 사용자 이름 필수
+  message: { type: String, required: true },  // 메시지 내용 필수
+  timestamp: { type: Date, default: Date.now }, // 메시지 전송 시간 기본값
+}); 
 const Message = mongoose.model('Message', messageSchema);
-
+export default Message;
 // 미들웨어 설정
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
