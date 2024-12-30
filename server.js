@@ -5,6 +5,7 @@ import mongoose from 'mongoose';
 import jwt from 'jsonwebtoken';
 import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
+import bcryptjs from 'bcryptjs';
 
 dotenv.config();
 
@@ -36,6 +37,14 @@ const messageSchema = new mongoose.Schema({
 });
 const Message = mongoose.model('Message', messageSchema);
 
+//유저 스키마
+const userSchema = new mongoose.Schema({
+  username: { type: String, required: true },
+  password: { type: String, required: true },
+});
+
+const User = mongoose.model('User', userSchema);
+
 // JWT 인증 라우터
 app.use(cookieParser());
 app.use(express.json());
@@ -43,14 +52,31 @@ app.use(express.json());
 app.post('/api/auth/login', async (req, res) => {
   const { username, password } = req.body;
 
-  const user = await User.findOne({ username });
-  if (!user) return res.status(400).json({ message: 'Invalid username or password' });
+  try {
+    const user = await User.findOne({ username });
+    if (!user) {
+      return res.status(400).json({ message: 'Invalid username' });
+    }
 
-  const isMatch = await bcryptjs.compare(password, user.password);
-  if (!isMatch) return res.status(400).json({ message: 'Invalid username or password' });
+    const isMatch = await bcryptjs.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ message: 'Wrong password' });
+    }
 
-  const token = jwt.sign({ username: user.username }, JWT_SECRET, { expiresIn: '1h' });
+    const token = jwt.sign({ username: user.username }, JWT_SECRET, { expiresIn: '1h' });
 
+    res.cookie('authToken', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+    });
+
+    res.status(200).json({ message: 'Login successful', token });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
   res.cookie('authToken', token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
@@ -61,34 +87,26 @@ app.post('/api/auth/login', async (req, res) => {
 });
 
 app.post('/api/auth/logout', (req, res) => {
-  const { username, password } = req.body;
-
-  try {
-    const user = await User.findOne({ username });
-    if (!user) {
-      return res.status(400).json({ message: 'Invalid username or password' });
-    }
-
-    const isMatch = await bcryptjs.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(400).json({ message: 'Invalid username or password' });
-    }
-
-    const token = jwt.sign({ username: user.username }, JWT_SECRET, { expiresIn: '1h' });
-
-    res.status(200).json({ message: 'Login successful', token });
-  } catch (err) {
-    console.error('Login error:', err);
-    res.status(500).json({ message: 'Internal server error' });
-  }
+  res.clearCookie('authToken');
+  res.status(200).json({ message: 'Logged out successfully' })
 });
 
-// WebSocket 설정
+io.use((socket, next) => {
+  const token = socket.handshake.auth.token;
+  if (!token) return next(new Error('Authentication error'));
+
+  jwt.verify(token, JWT_SECRET, (err, user) => {
+    if (err) return next(new Error('Invalid token'));
+    socket.username = user.username; // 사용자의 이름 저장
+    next();
+  });
+});
+
 io.on('connection', (socket) => {
-  console.log('A user connected');
+  console.log(`User connected: ${socket.username}`);
 
   socket.on('disconnect', () => {
-    console.log('A user disconnected');
+    console.log(`User disconnected: ${socket.username}`);
   });
 });
 
